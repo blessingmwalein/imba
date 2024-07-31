@@ -1,4 +1,3 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -79,58 +78,57 @@ class _ViewHouseState extends State<ViewHouse> {
               height: MediaQuery.of(context).size.height*2,
               child: Column(
                 children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height * 0.4,
-                    child: CarouselSlider(
-                      carouselController: CarouselController(),
-                      options: CarouselOptions(
-                        viewportFraction: 1,
-                        height: MediaQuery.of(context).size.height * 0.4,
-                        enlargeCenterPage: true,
-                        onPageChanged: (position, reason) {
-                          print(reason);
-                          print(CarouselPageChangedReason.controller);
-                        },
-                        enableInfiniteScroll: false,
-                      ),
-                      items:images.isNotEmpty? images.map<Widget>((i) {
-                        return Builder(
-                          builder: (BuildContext context) {
-                            return SizedBox(
-                              width: MediaQuery.of(context).size.width,
-                              height: MediaQuery.of(context).size.height * 0.5,
-                              // margin: EdgeInsets.all(10),
-                              child: Image.network(
-                                i,
-                                fit: BoxFit.cover,
-                                width: MediaQuery.of(context).size.width,
-                                height: MediaQuery.of(context).size.height * 0.4,
-                              )
-                            );
-                          },
-                        );
-                      }).toList():
-                      placeholders.map<Widget>((i) {
-                        return Builder(
-                          builder: (BuildContext context) {
-                            return SizedBox(
-                                width: MediaQuery.of(context).size.width,
-                                height: MediaQuery.of(context).size.height * 0.5,
-                                // margin: EdgeInsets.all(10),
-                                child: Image.asset(
-                                  i,
-                                  fit: BoxFit.cover,
-                                  width: MediaQuery.of(context).size.width,
-                                  height: MediaQuery.of(context).size.height * 0.4,
-                                )
-                            );
-                          },
-                        );
-                      }).toList()
-                      ,
-                    ),
-                  ),
+                  // SizedBox(
+                  //   width: MediaQuery.of(context).size.width,
+                  //   height: MediaQuery.of(context).size.height * 0.4,
+                  //   child: CarouselSlider(
+                  //     options: CarouselOptions(
+                  //       viewportFraction: 1,
+                  //       height: MediaQuery.of(context).size.height * 0.4,
+                  //       enlargeCenterPage: true,
+                  //       onPageChanged: (position, reason) {
+                  //         print(reason);
+                  //         print(CarouselPageChangedReason.controller);
+                  //       },
+                  //       enableInfiniteScroll: false,
+                  //     ),
+                  //     items:images.isNotEmpty? images.map<Widget>((i) {
+                  //       return Builder(
+                  //         builder: (BuildContext context) {
+                  //           return SizedBox(
+                  //             width: MediaQuery.of(context).size.width,
+                  //             height: MediaQuery.of(context).size.height * 0.5,
+                  //             // margin: EdgeInsets.all(10),
+                  //             child: Image.network(
+                  //               i,
+                  //               fit: BoxFit.cover,
+                  //               width: MediaQuery.of(context).size.width,
+                  //               height: MediaQuery.of(context).size.height * 0.4,
+                  //             )
+                  //           );
+                  //         },
+                  //       );
+                  //     }).toList():
+                  //     placeholders.map<Widget>((i) {
+                  //       return Builder(
+                  //         builder: (BuildContext context) {
+                  //           return SizedBox(
+                  //               width: MediaQuery.of(context).size.width,
+                  //               height: MediaQuery.of(context).size.height * 0.5,
+                  //               // margin: EdgeInsets.all(10),
+                  //               child: Image.asset(
+                  //                 i,
+                  //                 fit: BoxFit.cover,
+                  //                 width: MediaQuery.of(context).size.width,
+                  //                 height: MediaQuery.of(context).size.height * 0.4,
+                  //               )
+                  //           );
+                  //         },
+                  //       );
+                  //     }).toList()
+                  //     ,
+                  //   ),
+                  // ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: SizedBox(

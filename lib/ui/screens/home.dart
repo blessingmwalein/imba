@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:imba/bloc/upload/upload_event.dart';
 import 'package:imba/bloc/upload/upload_state.dart';
 import 'package:imba/bloc/user/user_bloc.dart';
 import 'package:imba/bloc/user/user_event.dart';
+import 'package:imba/ui/layouts/home_layout.dart';
 import 'package:imba/ui/screens/search_page.dart';
 import 'package:imba/ui/screens/upload_details.dart';
 
@@ -24,7 +26,6 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   late UploadBloc uploadBloc;
-
   late UserBloc userBloc;
   List<String> types = [];
   List<String> classifications = [];
@@ -36,97 +37,127 @@ class _HomeState extends State<Home> {
     uploadBloc = BlocProvider.of<UploadBloc>(context);
     uploadBloc.add(FetchTypesEvent());
     uploadBloc.add(FetchClassificationsEvent());
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: ColorConstants.yellow,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      backgroundColor: ColorConstants.yellow,
-      endDrawer:
-          Visibility(visible: isSuccess, child: const CustomHomeDrawer()),
-      body: Column(
-        children: [
-          const Expanded(
-            flex: 4,
-            child: SizedBox(
-                child: Logo(
-                    imageUrl: 'assets/images/home_icon.png',
-                    color: Colors.black)),
-          ),
-          const Expanded(
-              flex: 2,
-              child: CustomOpaqueContainer(
-                  // name: "IMBA",
-                  name: "NYUMBA",
-                  googleFontStyle: TextStyle(
-                      fontFamily: 'Antreas',
-                      fontSize: 80,
-                      fontWeight: FontWeight.bold))),
-          Visibility(
+    return HomeLayout(
+      hasBack: false,
+      isSuccess: isSuccess,
+      child: Center(
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 50,
+            ),
+            const Text(
+              "NYUMBA",
+              style: TextStyle(
+                backgroundColor: Colors.transparent,
+                fontFamily: 'Antreas',
+                fontSize: 80,
+                fontWeight: FontWeight.bold,
+                color: Colors.orange
+              ),
+            ),
+          
+            // const CustomOpaqueContainer(
+            //   name: "NYUMBA",
+            //   googleFontStyle: TextStyle(
+            //     backgroundColor: Colors.transparent,
+            //     fontFamily: 'Antreas',
+            //     fontSize: 80,
+            //     fontWeight: FontWeight.bold,
+            //   ),
+            // ),
+            Padding(
+              padding: EdgeInsets.all(20),
+              child: Text(
+                "Welcome to Nyumba, your one-stop platform for uploading and searching for houses to rent. Get started by uploading your property or searching for your dream home.",
+                textAlign: TextAlign.center,
+                
+                style: GoogleFonts.montserrat(color: Colors.black, fontSize: 27, ),
+              ),
+            ),
+            Spacer(),
+            Visibility(
               visible: true,
-              child: Container(
-                child: BlocListener<UploadBloc, UploadState>(
-                    listener: (context, state) {
+              child: BlocListener<UploadBloc, UploadState>(
+                listener: (context, state) {
                   if (state is TypesSuccessState) {
-                    print("types" + state.types.toString());
                     types = state.types.types;
                   }
-
+        
                   if (state is ClassificationsSuccessState) {
                     classifications = state.classifications.classifications;
                     setState(() {
                       isSuccess = true;
                     });
                   }
-                }, child: BlocBuilder<UploadBloc, UploadState>(
-                        builder: (context, state) {
-                  if (state is UploadLoadingState) {
-                    return const LoadingIndicator();
-                  }
-                  return const LoadingIndicator();
-                })),
-              )),
-          Visibility(
-            visible: isSuccess,
-            child: Expanded(
-              flex: 3,
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    CustomElevateButton(
+                },
+                child: BlocBuilder<UploadBloc, UploadState>(
+                  builder: (context, state) {
+                    if (state is UploadLoadingState) {
+                      return const LoadingIndicator();
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+            ),
+            Visibility(
+              visible: isSuccess,
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.7,
+                    height: 60,
+                    child: CustomElevateButton(
                       name: 'Upload',
-                      color: Colors.black,
+                      isOutline: true,
+                      color: Colors.orange,
                       onSubmit: () {
-                        Navigator.of(context).push(MaterialPageRoute(
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
                             builder: (context) => UploadDetails(
-                                types: types,
-                                classifications: classifications)));
+                              types: types,
+                              classifications: classifications,
+                            ),
+                          ),
+                        );
                       },
                     ),
-                    CustomElevateButton(
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    //80% of the screen width
+                    width: MediaQuery.of(context).size.width * 0.7,
+                    height: 60,
+                    child: CustomElevateButton(
                       name: 'Search',
-                      color: Colors.black,
+                      color: Colors.orange,
                       onSubmit: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => Search(
-                                    types: types,
-                                    classifications: classifications)));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Search(
+                              types: types,
+                              classifications: classifications,
+                            ),
+                          ),
+                        );
                       },
                     ),
-                  ]),
+                  ),
+                  const SizedBox(
+                    height: 40,
+                  )
+                ],
+              ),
             ),
-          )
-        ],
+          ],
+        ),
       ),
     );
   }

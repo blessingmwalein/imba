@@ -41,7 +41,6 @@ dependencies:
   mac_address: ^1.0.0
   dio: ^5.0.0
   mime_type: ^1.0.0
-  carousel_slider: ^4.0.0
   location: ^6.0.2
   maps_launcher: ^2.2.0
   google_maps_flutter: ^2.2.1

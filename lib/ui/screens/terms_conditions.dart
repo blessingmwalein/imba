@@ -9,8 +9,6 @@ import '../../bloc/terms_conditions/terms_bloc.dart';
 import '../../bloc/terms_conditions/terms_state.dart';
 import '../../secure_storage/secure_storage_manager.dart';
 import '../widgets/custom_elevated_button.dart';
-import '../widgets/logo.dart';
-import 'home.dart';
 
 class TermsAndConditions extends StatefulWidget {
   const TermsAndConditions({Key? key}) : super(key: key);
@@ -22,82 +20,104 @@ class TermsAndConditions extends StatefulWidget {
 class _TermsAndConditionsState extends State<TermsAndConditions> {
   final SecureStorageManager _secureStorageManager = SecureStorageManager();
 
-  late TermsBloc termsBloc;
+  late TermsBloc _termsBloc;
 
   @override
   void initState() {
-    termsBloc = BlocProvider.of<TermsBloc>(context);
-    termsBloc.add(GetTermsEvent());
     super.initState();
+    _termsBloc = BlocProvider.of<TermsBloc>(context);
+    _termsBloc.add(GetTermsEvent());
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-          body: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-                height: MediaQuery.of(context).size.height * 0.25,
-                width: MediaQuery.of(context).size.width,
-                color: ColorConstants.yellow,
-                child: const Logo(
-                    imageUrl: 'assets/images/home_icon.png',
-                    color: Colors.black,
-                    height: 100,
-                    width: 100)),
-            const SizedBox(height: 10),
-            Text("TERMS AND CONDITIONS",
-                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            SizedBox(
-                height: MediaQuery.of(context).size.height * 0.40,
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 40.h),
+                child: Icon(
+                  Icons.article, // Icon representing terms and conditions
+                  size: 100.sp,
+                  color: Colors.black.withOpacity(0.5),
+                ),
+              ),
+              SizedBox(height: 20.h),
+              Text(
+                "Terms and Conditions",
+                style: TextStyle(
+                  fontSize: 30.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black.withOpacity(0.7),
+                ),
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                "Please read and accept our terms and conditions to proceed.",
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20.h),
+              Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SingleChildScrollView(child:
-                      BlocBuilder<TermsBloc, TermsState>(
-                          builder: (context, state) {
-                    if (state is GetTermsLoadingState) {
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: BlocBuilder<TermsBloc, TermsState>(
+                    builder: (context, state) {
+                      if (state is GetTermsLoadingState) {
+                        return const LoadingIndicator();
+                      } else if (state is GetTermsSuccessState) {
+                        return SingleChildScrollView(
+                          child: Text(
+                            state.terms,
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              color: Colors.black87,
+                              height: 1.6,
+                            ),
+                          ),
+                        );
+                      } else if (state is AcceptTermsSuccessState) {
+                        _secureStorageManager.setIsAcceptedTerms(
+                            isAccepted: "true");
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          Navigator.pushReplacementNamed(context, '/home');
+                        });
+                      } else if (state is GetTermsFailedState) {
+                        return Center(
+                          child: CustomElevateButton(
+                            name: 'Retry',
+                            color: Colors.black,
+                            onSubmit: () {
+                              _termsBloc.add(GetTermsEvent());
+                            },
+                          ),
+                        );
+                      }
                       return const LoadingIndicator();
-                    } else if (state is GetTermsSuccessState) {
-                      return Text(state.terms);
-                    } else if (state is AcceptTermsSuccessState) {
-                      _secureStorageManager.setIsAcceptedTerms(
-                          isAccepted: "true");
-                      WidgetsBinding.instance?.addPostFrameCallback((_) {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const Home()));
-                      });
-                    } else if (state is GetTermsFailedState) {
-                      return CustomElevateButton(
-                        name: 'Retry',
-                        color: Colors.black,
-                        onSubmit: () {
-                          termsBloc.add(GetTermsEvent());
-                        },
-                      );
-                    }
-                    return const LoadingIndicator();
-                  })),
-                )),
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.1,
-            ),
-            CustomElevateButton(
-              name: 'ACCEPT',
-              color: Colors.black,
-              onSubmit: () {
-                termsBloc.add(AcceptTermsEvent());
-              },
-            )
-          ],
+                    },
+                  ),
+                ),
+              ),
+              // SizedBox(height: 20.h),
+              CustomElevateButton(
+                name: 'ACCEPT',
+                color: Colors.black,
+                onSubmit: () {
+                  _termsBloc.add(AcceptTermsEvent());
+                },
+              ),
+              SizedBox(height: 20.h),
+            ],
+          ),
         ),
-      )),
+      ),
     );
   }
 }
