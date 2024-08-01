@@ -4,13 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:imba/bloc/upload/upload_bloc.dart';
+import 'package:imba/bloc/upload/upload_event.dart';
 import 'package:imba/bloc/upload/upload_state.dart';
+import 'package:imba/bloc/user/user_bloc.dart';
+import 'package:imba/ui/layouts/home_layout.dart';
 import 'package:imba/ui/screens/upload_images.dart';
 import 'package:imba/utilities/constants.dart';
 import 'package:intl/intl.dart';
 
-import '../../bloc/upload/upload_event.dart';
-import '../../bloc/user/user_bloc.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/date_formatter.dart';
@@ -24,640 +25,85 @@ class UploadDetails extends StatefulWidget {
   final List<String> types;
   final List<String> classifications;
 
-  const UploadDetails(
-      {Key? key, required this.types, required this.classifications})
-      : super(key: key);
+  const UploadDetails({
+    Key? key,
+    required this.types,
+    required this.classifications,
+  }) : super(key: key);
 
   @override
-  State<UploadDetails> createState() => _UploadDetailsState();
+  _UploadDetailsState createState() => _UploadDetailsState();
 }
 
 class _UploadDetailsState extends State<UploadDetails> {
-  bool isChecked = false;
-  var isBorehole = false;
-  var isElectricity = false;
-  var isSolar = false;
-  var isWater = false;
-  var isWalled = false;
-  var isTiled = false;
-  var isGated = false;
-  var isOccupied = false;
-  var emailController = TextEditingController();
-  final _homeAddressController = TextEditingController();
-  final _areaController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _rentalsController = TextEditingController();
-  final _roomsController = TextEditingController();
-  final _occupatiionDateController = TextEditingController();
-  final _extraDetailsController = TextEditingController();
-  final _depositController = TextEditingController();
-  final _contactController = TextEditingController();
-  late final UserBloc userBloc;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _homeAddressController = TextEditingController();
+  final TextEditingController _areaController = TextEditingController();
+  final TextEditingController _cityController = TextEditingController();
+  final TextEditingController _rentalsController = TextEditingController();
+  final TextEditingController _roomsController = TextEditingController();
+  final TextEditingController _occupationDateController =
+      TextEditingController();
+  final TextEditingController _extraDetailsController = TextEditingController();
+  final TextEditingController _depositController = TextEditingController();
+  final TextEditingController _contactController = TextEditingController();
+
+  late UserBloc _userBloc;
+  DateTime _currentDate = DateTime.now();
+  String _classificationsValue = '';
+  String _typeValue = '';
+
+  bool _isBorehole = false;
+  bool _isElectricity = false;
+  bool _isSolar = false;
+  bool _isWater = false;
+  bool _isWalled = false;
+  bool _isTiled = false;
+  bool _isGated = false;
+  bool _isOccupied = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _userBloc = BlocProvider.of<UserBloc>(context);
+    _classificationsValue = widget.classifications[0];
+    _typeValue = widget.types[0];
+    _contactController.text = _userBloc.userPhoneNumber;
+  }
+
   @override
   void dispose() {
-    emailController.dispose();
+    _emailController.dispose();
     _homeAddressController.dispose();
-    _areaController.dispose();
     _areaController.dispose();
     _cityController.dispose();
     _rentalsController.dispose();
     _roomsController.dispose();
-    _occupatiionDateController.dispose();
+    _occupationDateController.dispose();
     _extraDetailsController.dispose();
     _depositController.dispose();
     _contactController.dispose();
     super.dispose();
   }
 
-  DateTime currentDate = DateTime.now();
-
-// late UploadBloc uploadBloc;
-  var classificationsValue = '';
-  var typeValue = "";
-
-  @override
-  void initState() {
-    userBloc = BlocProvider.of<UserBloc>(context);
-    classificationsValue = widget.classifications[0];
-    typeValue = widget.types[0];
-    _contactController.text = userBloc.userPhoneNumber;
-
-    super.initState();
-  }
-
-  static GlobalKey<FormState> formKey = GlobalKey<FormState>(); //key for form
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios_new,
-              color: Colors.black,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          elevation: 0,
-          title: const Text('Upload Details',
-              style: TextStyle(color: ColorConstants.yellow)),
-          backgroundColor: Colors.white,
-          actions: [
-            IconButton(
-              icon: const Logo(
-                imageUrl: 'assets/images/houseicon.png',
-              ),
-              iconSize: 100,
-              onPressed: () {},
-            )
-          ],
-        ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Form(
-              key: formKey,
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const CustomUploadDetailsHeaders(
-                      header: 'House Details',
-                    ),
-                    CustomTextField(
-                      readOnly: false,
-                      hintText: '',
-                      labelText: 'Home Address',
-                      controller: _homeAddressController,
-                      onChanged: (value) {
-                        if (formKey.currentState!.validate()) {}
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter house address';
-                        }
-                        return null;
-                      },
-                    ),
-                    CustomTextField(
-                      readOnly: false,
-                      hintText: '',
-                      labelText: 'Area',
-                      controller: _areaController,
-                      onChanged: (value) {
-                        if (formKey.currentState!.validate()) {}
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter area';
-                        }
-                        return null;
-                      },
-                    ),
-                    CustomTextField(
-                      readOnly: false,
-                      hintText: '',
-                      labelText: 'City',
-                      controller: _cityController,
-                      onChanged: (value) {
-                        if (formKey.currentState!.validate()) {}
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter city';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    const CustomUploadDetailsHeaders(
-                      header: 'Occupation Details',
-                    ),
-                    CustomTextField(
-                      readOnly: false,
-                      hintText: '',
-                      labelText: 'Rentals',
-                      controller: _rentalsController,
-                      onChanged: (value) {
-                        if (formKey.currentState!.validate()) {}
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter rent';
-                        }
-                        return null;
-                      },
-                    ),
-                    CustomTextField(
-                        readOnly: false,
-                        hintText: '',
-                        labelText: '# of Rooms',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter number of rooms';
-                          }
-
-                          return null;
-                        },
-                        onChanged: (value) {
-                          if (formKey.currentState!.validate()) {}
-                        },
-                        controller: _roomsController),
-                    Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: SizedBox(
-                        child: Row(
-                          children: [
-                            Expanded(
-                                flex: 1,
-                                child: Text("Occupation Date",
-                                    style: GoogleFonts.montserrat())),
-                            Expanded(
-                              flex: 2,
-                              child: TextFormField(
-                                focusNode: AlwaysDisabledFocusNode(),
-                                controller: _occupatiionDateController,
-                                decoration: InputDecoration(
-                                    isDense: true,
-                                    border: InputBorder.none,
-                                    focusedBorder: InputBorder.none,
-                                    enabledBorder: InputBorder.none,
-                                    errorBorder: InputBorder.none,
-                                    disabledBorder: InputBorder.none,
-                                    hintText: DateFormat.yMMMMd('en_US')
-                                        .format(currentDate),
-                                    filled: true,
-                                    fillColor: ColorConstants.grey),
-                                inputFormatters: [
-                                  LengthLimitingTextInputFormatter(10),
-                                  DateFormatter(),
-                                ],
-                                onChanged: null,
-                                onTap: () {
-                                  _selectDate(context);
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    CustomTextField(
-                      readOnly: false,
-                      hintText: '',
-                      labelText: 'Extra Details',
-                      controller: _extraDetailsController,
-                      onChanged: (value) {
-                        if (formKey.currentState!.validate()) {}
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter extra details';
-                        }
-                        return null;
-                      },
-                    ),
-                    CustomTextField(
-                      readOnly: false,
-                      hintText: '',
-                      labelText: 'Deposit',
-                      controller: _depositController,
-                      onChanged: (value) {
-                        if (formKey.currentState!.validate()) {}
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter deposit';
-                        }
-                        return null;
-                      },
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                              flex: 1,
-                              child: Text("Type",
-                                  style: GoogleFonts.montserrat())),
-                          Expanded(
-                              flex: 2,
-                              child: SizedBox(
-                                height: 30,
-                                child: Container(
-                                  color: ColorConstants.grey,
-                                  child: DropdownButton(
-                                    isDense: true,
-                                    value: typeValue,
-                                    icon: const Icon(Icons.keyboard_arrow_down),
-                                    items: widget.types.map((String items) {
-                                      return DropdownMenuItem(
-                                          value: items, child: Text(items));
-                                    }).toList(),
-                                    onChanged: (newValue) {
-                                      setState(() {
-                                        typeValue = newValue.toString();
-                                      });
-                                    },
-                                  ),
-                                ),
-                              )),
-                        ],
-                      ),
-                    ),
-                    CustomTextField(
-                      readOnly: false,
-                      hintText: '',
-                      labelText: 'Contact',
-                      // type: TextInputType.,
-                      controller: _contactController,
-                      onChanged: (value) {
-                        if (formKey.currentState!.validate()) {}
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter contact';
-                        }
-                        if (!value.startsWith("+")) {
-                          return 'start with country code';
-                        }
-                        return null;
-                      },
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                              flex: 1,
-                              child: Text("Classification",
-                                  style: GoogleFonts.montserrat())),
-                          Expanded(
-                              flex: 2,
-                              child: SizedBox(
-                                height: 30,
-                                child: Container(
-                                  color: ColorConstants.grey,
-                                  child: DropdownButton(
-                                    isDense: true,
-                                    value: classificationsValue,
-                                    icon: const Icon(Icons.keyboard_arrow_down),
-                                    items: widget.classifications
-                                        .map((String items) {
-                                      return DropdownMenuItem(
-                                          value: items, child: Text(items));
-                                    }).toList(),
-                                    onChanged: (newValue) {
-                                      setState(() {
-                                        classificationsValue =
-                                            newValue.toString();
-                                      });
-                                    },
-                                  ),
-                                ),
-                              )),
-                        ],
-                      ),
-                    ),
-                    CustomTextField(
-                      readOnly: false,
-                      hintText: '',
-                      labelText: 'Email',
-                      controller: emailController,
-                      onChanged: (value) {
-                        if (formKey.currentState!.validate()) {}
-                      },
-                      validator: (value) {
-                        if (value!.isEmpty ||
-                            !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                .hasMatch(value)) {
-                          return "invalid email";
-                        } else {
-                          return null;
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    const CustomUploadDetailsHeaders(
-                      header: 'House Features',
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text("Borehole"),
-                              Checkbox(
-                                activeColor: ColorConstants.yellow,
-                                checkColor: ColorConstants.yellow,
-                                value: isBorehole,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    isBorehole = value!;
-                                  });
-                                },
-                              )
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text("Rent Includes Electricity"),
-                              Checkbox(
-                                activeColor: ColorConstants.yellow,
-                                checkColor: ColorConstants.yellow,
-                                value: isElectricity,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    isElectricity = value!;
-                                  });
-                                },
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("Solar"),
-                              Checkbox(
-                                activeColor: ColorConstants.yellow,
-                                checkColor: ColorConstants.yellow,
-                                value: isSolar,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    isSolar = value!;
-                                  });
-                                },
-                              )
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text("Rent Includes Water"),
-                              Checkbox(
-                                activeColor: ColorConstants.yellow,
-                                checkColor: ColorConstants.yellow,
-                                value: isWater,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    isWater = value!;
-                                  });
-                                },
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text("Walled"),
-                              Checkbox(
-                                activeColor: ColorConstants.yellow,
-                                checkColor: ColorConstants.yellow,
-                                value: isWalled,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    isWalled = value!;
-                                  });
-                                },
-                              )
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text("Gated"),
-                              Checkbox(
-                                activeColor: ColorConstants.yellow,
-                                checkColor: ColorConstants.yellow,
-                                value: isGated,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    isGated = value!;
-                                  });
-                                },
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text("Tiled"),
-                              Checkbox(
-                                activeColor: ColorConstants.yellow,
-                                checkColor: ColorConstants.yellow,
-                                value: isTiled,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    isTiled = value!;
-                                  });
-                                },
-                              )
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-                    Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                      SizedBox(
-                        width: 150,
-                        child: BlocListener<UploadBloc, UploadState>(
-                          listener: (context, state) {
-                            if (state is UploadSuccessState) {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                content: const Text('Uploaded'),
-                                duration: const Duration(seconds: 3),
-                                action: SnackBarAction(
-                                  label: '',
-                                  onPressed: () {},
-                                ),
-                              ));
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const UploadsList()));
-                            }
-                            if (state is UploadFailedState) {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                content: const Text('failed to upload'),
-                                duration: const Duration(seconds: 1),
-                                action: SnackBarAction(
-                                  label: '',
-                                  onPressed: () {},
-                                ),
-                              ));
-
-                              SchedulerBinding.instance!
-                                  .addPostFrameCallback((_) {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => PropertyError(
-                                            errorMessage: state.toString())));
-                              });
-                            }
-                          },
-                          child: BlocBuilder<UploadBloc, UploadState>(
-                              builder: (context, state) {
-                            if (state is UploadLoadingState) {
-                              return const LoadingIndicator();
-                            }
-                            if (state is UploadHouseSuccessState) {
-                              WidgetsBinding.instance!
-                                  .addPostFrameCallback((_) {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => UploadImages(
-                                            houseId: state.houseResponse.id,
-                                            type: state.houseResponse.type,
-                                            homeAddress: state
-                                                .houseResponse.houseAddress)));
-                              });
-                            }
-                            return CustomElevateButton(
-                              name: 'Save',
-                              color: ColorConstants.yellow,
-                              onSubmit: () {
-                                //  Validate returns true if the form is valid, or false otherwise.
-                                if (formKey.currentState!.validate()) {
-                                  BlocProvider.of<UploadBloc>(context).add(
-                                      UploadHouseEvent(
-                                          area: _areaController.text,
-                                          type: typeValue,
-                                          walled: isWalled,
-                                          tiled: isTiled,
-                                          solar: isSolar,
-                                          token: '',
-                                          boreHole: isBorehole,
-                                          city: _cityController.text,
-                                          classification: classificationsValue,
-                                          contact: _contactController.text,
-                                          deposit: int.parse(
-                                              _depositController.text),
-                                          email: emailController.text,
-                                          extraDetails:
-                                              _extraDetailsController.text,
-                                          gated: isGated,
-                                          houseAddress:
-                                              _homeAddressController.text,
-                                          numberRooms:
-                                              int.parse(_roomsController.text),
-                                          occupationDate:
-                                              currentDate.toString(),
-                                          occupied: isOccupied,
-                                          rent: int.parse(
-                                              _rentalsController.text),
-                                          rentElectricityInclusive:
-                                              isElectricity,
-                                          rentWaterInclusive: isWater));
-                                }
-                              },
-                            );
-                          }),
-                        ),
-                      ),
-                    ]),
-                  ]),
-            ),
-          ),
-        ));
-  }
-
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: currentDate,
+      initialDate: _currentDate,
       firstDate: DateTime.now(),
       lastDate: DateTime(2050),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: ColorConstants.yellow, // <-- SEE HERE
-              onPrimary: Colors.black, // <-- SEE HERE
-              onSurface: Colors.black, // <-- SEE HERE
+            colorScheme: ColorScheme.light(
+              primary: ColorConstants.yellow,
+              onPrimary: Colors.black,
+              onSurface: Colors.black,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: Colors.black, // button text color
+                foregroundColor: Colors.black,
               ),
             ),
           ),
@@ -666,31 +112,318 @@ class _UploadDetailsState extends State<UploadDetails> {
       },
     );
 
-    if (pickedDate != null && pickedDate != currentDate) {
+    if (pickedDate != null && pickedDate != _currentDate) {
       setState(() {
-        currentDate = pickedDate;
+        _currentDate = pickedDate;
       });
     }
   }
 
-  TimeOfDay _time = TimeOfDay(
-      hour: (DateTime(DateTime.now().hour).hour),
-      minute: (DateTime(DateTime.now().minute).minute));
-
-  void _selectTime() async {
-    final TimeOfDay? newTime = await showTimePicker(
-      context: context,
-      initialTime: _time,
-    );
-    if (newTime != null) {
-      setState(() {
-        _time = newTime;
-      });
-    }
-  }
-}
-
-class AlwaysDisabledFocusNode extends FocusNode {
   @override
-  bool get hasFocus => false;
+  Widget build(BuildContext context) {
+    return HomeLayout(
+      hasBack: true,
+      title: 'Upload Details',
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const CustomUploadDetailsHeaders(header: 'House Details'),
+                _buildTextField(
+                  controller: _homeAddressController,
+                  labelText: 'Home Address',
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter house address'
+                      : null,
+                ),
+                _buildTextField(
+                  controller: _areaController,
+                  labelText: 'Area',
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter area'
+                      : null,
+                ),
+                _buildTextField(
+                  controller: _cityController,
+                  labelText: 'City',
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter city'
+                      : null,
+                ),
+                const SizedBox(height: 15),
+                const CustomUploadDetailsHeaders(header: 'Occupation Details'),
+                _buildTextField(
+                  controller: _rentalsController,
+                  labelText: 'Rentals',
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter rent'
+                      : null,
+                ),
+                _buildTextField(
+                  controller: _roomsController,
+                  labelText: '# of Rooms',
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter number of rooms'
+                      : null,
+                ),
+                _buildOccupationDateField(),
+                _buildTextField(
+                  controller: _extraDetailsController,
+                  labelText: 'Extra Details',
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter extra details'
+                      : null,
+                ),
+                _buildTextField(
+                  controller: _depositController,
+                  labelText: 'Deposit',
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter deposit'
+                      : null,
+                ),
+                _buildDropdownField(
+                  label: 'Type',
+                  value: _typeValue,
+                  items: widget.types,
+                  onChanged: (newValue) =>
+                      setState(() => _typeValue = newValue.toString()),
+                ),
+                _buildTextField(
+                  controller: _contactController,
+                  labelText: 'Contact',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter contact';
+                    }
+                    if (!value.startsWith("+")) {
+                      return 'Start with country code';
+                    }
+                    return null;
+                  },
+                ),
+                _buildDropdownField(
+                  label: 'Classification',
+                  value: _classificationsValue,
+                  items: widget.classifications,
+                  onChanged: (newValue) => setState(
+                      () => _classificationsValue = newValue.toString()),
+                ),
+                _buildTextField(
+                  controller: _emailController,
+                  labelText: 'Email',
+                  validator: (value) {
+                    if (value == null ||
+                        value.isEmpty ||
+                        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                            .hasMatch(value)) {
+                      return 'Invalid email';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 15),
+                const CustomUploadDetailsHeaders(header: 'House Features'),
+                _buildCheckboxRow(
+                    label: 'Borehole',
+                    value: _isBorehole,
+                    onChanged: (value) => setState(() => _isBorehole = value!)),
+                _buildCheckboxRow(
+                    label: 'Rent Includes Electricity',
+                    value: _isElectricity,
+                    onChanged: (value) =>
+                        setState(() => _isElectricity = value!)),
+                _buildCheckboxRow(
+                    label: 'Solar',
+                    value: _isSolar,
+                    onChanged: (value) => setState(() => _isSolar = value!)),
+                _buildCheckboxRow(
+                    label: 'Rent Includes Water',
+                    value: _isWater,
+                    onChanged: (value) => setState(() => _isWater = value!)),
+                _buildCheckboxRow(
+                    label: 'Walled',
+                    value: _isWalled,
+                    onChanged: (value) => setState(() => _isWalled = value!)),
+                _buildCheckboxRow(
+                    label: 'Gated',
+                    value: _isGated,
+                    onChanged: (value) => setState(() => _isGated = value!)),
+                _buildCheckboxRow(
+                    label: 'Tiled',
+                    value: _isTiled,
+                    onChanged: (value) => setState(() => _isTiled = value!)),
+                const SizedBox(height: 15),
+                Center(
+                  child: SizedBox(
+                    //80% of the screen width
+                    width: MediaQuery.of(context).size.width * 0.7,
+                    height: 60,
+                    child: BlocListener<UploadBloc, UploadState>(
+                      listener: (context, state) {
+                        if (state is UploadSuccessState) {
+                          // Navigate to the next screen or show success message
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => UploadsList()),
+                          );
+                        } else if (state is UploadFailedState) {
+                          // Show error message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(state.message),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        } else if (state is UploadLoadingState) {
+                          // Show loading indicator
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return const LoadingIndicator();
+                            },
+                          );
+                        }
+                      },
+                      child: CustomElevateButton(
+                        color: Colors.orange,
+                        name: 'Submit',
+                        onSubmit: () {
+                          if (_formKey.currentState!.validate()) {
+                            // Dispatch upload event with form data
+                            BlocProvider.of<UploadBloc>(context).add(
+                              UploadHouseEvent(
+                                area: _areaController.text,
+                                type: _typeValue,
+                                walled: _isWalled,
+                                tiled: _isTiled,
+                                solar: _isSolar,
+                                token: '',
+                                boreHole: _isBorehole,
+                                city: _cityController.text,
+                                classification: _classificationsValue,
+                                contact: _contactController.text,
+                                deposit: int.parse(_depositController.text),
+                                email: _emailController.text,
+                                extraDetails: _extraDetailsController.text,
+                                gated: _isGated,
+                                houseAddress: _homeAddressController.text,
+                                numberRooms: int.parse(_roomsController.text),
+                                occupationDate: _currentDate.toString(),
+                                occupied: _isOccupied,
+                                rent: int.parse(_rentalsController.text),
+                                rentElectricityInclusive: _isElectricity,
+                                rentWaterInclusive: _isWater,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    String? Function(String?)? validator,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: CustomTextField(
+        controller: controller,
+        labelText: labelText,
+        validator: validator,
+      ),
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String label,
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        decoration: InputDecoration(
+          labelText: label,
+       
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: ColorConstants.yellow),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: ColorConstants.yellow),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: Colors.red),
+          ),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: BorderSide(color: ColorConstants.yellow)),
+        ),
+        onChanged: onChanged,
+        items: items.map((String item) {
+          return DropdownMenuItem<String>(
+            value: item,
+            child: Text(item, style: GoogleFonts.montserrat(fontSize: 16, color: Colors.black87)),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildOccupationDateField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: GestureDetector(
+        onTap: () => _selectDate(context),
+        child: AbsorbPointer(
+          child: CustomTextField(
+            controller: _occupationDateController
+              ..text = DateFormat('dd/MM/yyyy').format(_currentDate),
+            labelText: 'Occupation Date',
+            validator: (value) => value == null || value.isEmpty
+                ? 'Please enter occupation date'
+                : null,
+            // inputFormatters: [DateFormatter()],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCheckboxRow({
+    required String label,
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+  }) {
+    return Row(
+      children: [
+        Checkbox(
+          value: value,
+          onChanged: onChanged,
+        ),
+        Text(label, style: GoogleFonts.montserrat(fontSize: 16, color: Colors.black87)),
+      ],
+    );
+  }
 }

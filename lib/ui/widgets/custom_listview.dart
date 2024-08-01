@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:imba/ui/screens/appointment.dart';
 
 import '../../bloc/upload/upload_bloc.dart';
@@ -11,165 +12,157 @@ import '../screens/property_details.dart';
 import 'custom_elevated_button.dart';
 import 'logo.dart';
 
-class CustomListView extends StatefulWidget {
+class CustomListView extends StatelessWidget {
   final List<HouseResponse> uploadsResponse;
   final String? isPage;
 
-  const CustomListView({
-    Key? key,
-    required this.uploadsResponse,
-    this.isPage
-
-  }) : super(key: key);
-
-  @override
-  State<CustomListView> createState() => _CustomListViewState();
-}
-
-class _CustomListViewState extends State<CustomListView> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  const CustomListView({Key? key, required this.uploadsResponse, this.isPage})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var snackdemo = const SnackBar(
-      content: Text('Activated'),
-      backgroundColor: ColorConstants.yellow,
-      elevation: 10,
-      behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.all(5),
-    );
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.7,
       child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: widget.uploadsResponse.length,
-          itemBuilder: (BuildContext context, int index) {
-            return buildUploadsList(
-                context, index, snackdemo, widget.uploadsResponse, widget.isPage!);
-          }),
+        shrinkWrap: true,
+        itemCount: uploadsResponse.length,
+        itemBuilder: (BuildContext context, int index) {
+          return _buildUploadsList(context, index, uploadsResponse, isPage);
+        },
+      ),
     );
   }
+
+  Widget _buildUploadsList(
+    BuildContext context, int index, List<HouseResponse> uploadsResponse, String? isPage) {
+  final house = uploadsResponse[index];
+
+  return Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8.0), // Rounded corners
+      border: Border.all(color: Colors.grey.withOpacity(0.6), width: 0.8),  // Grey outline
+    ),
+    child: Row(
+      children: [
+        _buildImageColumn(context, house),
+        _buildDetailsColumn(context, house),
+        _buildActionColumn(context, house, isPage),
+      ],
+    ),
+  );
 }
 
-Card buildUploadsList(BuildContext context, int index, SnackBar snackdemo,
-    List<HouseResponse> uploadsResponse, String isPage) {
-  return Card(
-    child: Row(children: [
-      Expanded(
-          child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => PropertyDetails(
-                            id: uploadsResponse[index].id, flag: "viewed"),
-                        settings: const RouteSettings(
-                          name: 'SecondPage',
-                        ))).then((value) => BlocProvider.of<UploadBloc>(context)
-                    .add(GetUploadsEvent()));
-              },
-              child: Column(children: const [
-                Logo(
-                    imageUrl: 'assets/images/houseicon.png',
-                    height: 100,
-                    width: 100)
-              ]))),
-      Expanded(
-        child: GestureDetector(
-          onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => PropertyDetails(
-                        id: uploadsResponse[index].id,
-                        flag: "viewed"))).then((value) =>
-                BlocProvider.of<UploadBloc>(context).add(GetUploadsEvent()));
-          },
-          child: Column(children: [
-            Text(uploadsResponse[index].type),
-            Text(uploadsResponse[index].area),
-            Text(uploadsResponse[index].city)
-          ]),
+
+  Widget _buildImageColumn(BuildContext context, HouseResponse house) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _navigateToPropertyDetails(context, house),
+        child: const Logo(
+          imageUrl: 'assets/images/houseicon.png',
+          height: 100,
+          width: 100,
         ),
       ),
-      Expanded(
-          child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => PropertyDetails(
-                            id: uploadsResponse[index].id, flag: "viewed"),
-                        settings: const RouteSettings(
-                          name: 'SecondPage',
-                        ))).then((value) => BlocProvider.of<UploadBloc>(context)
-                    .add(
-                        GetHouseByIdEvent(houseId: uploadsResponse[index].id)));
-              },
-              child: Column(children: [
-                Text((uploadsResponse[index].numberRooms).toString() + " rooms",
-                    style: const TextStyle(color: ColorConstants.yellow))
-              ]))),
-      Expanded(
-          child: Column(children: [
-        Text("${uploadsResponse[index].currency}${uploadsResponse[index].rent}",
-            style: const TextStyle(color: ColorConstants.yellow)),
+    );
+  }
 
-       isPage=="viewed"?
-       CustomElevateButton(
-         name: "Reserve",
-         color: Colors.black,
-         fontSize: 10,
-         onSubmit: () {
-           WidgetsBinding.instance!.addPostFrameCallback((_) {
-             Navigator.push(
-                 context,
-                 MaterialPageRoute(
-                     builder: (context) =>
-                         Appointment(
-                             houseId: uploadsResponse[index].id,
-                             action: "UPDATE"
-                         )));
-           });
-         }
-       )
-           :
-        CustomElevateButton(
-          name: uploadsResponse[index].activated ? "Edit" : "Activate",
-          color: Colors.black,
-          fontSize: 10,
-          onSubmit: () {
-            uploadsResponse[index].activated
-                ? WidgetsBinding.instance!.addPostFrameCallback((_) {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => EditProperty(
-                                  houseId: uploadsResponse[index].id,
-                                  deposit: uploadsResponse[index].deposit,
-                                  occupationDate: uploadsResponse[index]
-                                      .occupationDate
-                                      .toString(),
-                                  occupied: uploadsResponse[index].occupied,
-                                  rent: uploadsResponse[index].rent,
-                                )));
-                  })
-                : Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => PropertyDetails(
-                            id: uploadsResponse[index].id, flag: "viewed"),
-                        settings: const RouteSettings(
-                          name: 'SecondPage',
-                        ))).then((value) => BlocProvider.of<UploadBloc>(context)
-                    .add(
-                        GetHouseByIdEvent(houseId: uploadsResponse[index].id)));
-          },
-        )
-      ]))
-    ]),
-  );
+  Widget _buildDetailsColumn(BuildContext context, HouseResponse house) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _navigateToPropertyDetails(context, house),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(house.type, style: GoogleFonts.montserrat(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w700)),
+            SizedBox(height: 5),
+
+            Text(house.area, style: GoogleFonts.montserrat(color: Colors.black54, fontSize: 15)),
+            const SizedBox(height: 5),
+            Text(house.city, style: GoogleFonts.montserrat(color: Colors.black54, fontSize: 15)),
+            const SizedBox(height: 5),
+            Text("${house.numberRooms} rooms", style: GoogleFonts.montserrat(color: Colors.orange, fontSize: 15)),
+
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildActionColumn(BuildContext context, HouseResponse house, String? isPage) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text("${house.currency}${house.rent}", style: GoogleFonts.montserrat(color: Colors.black87, fontSize: 20, fontWeight: FontWeight.w700)),
+            _buildActionButton(context, house, isPage),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(BuildContext context, HouseResponse house, String? isPage) {
+    if (isPage == "viewed") {
+      return CustomElevateButton(
+        name: "Reserve",
+        color: Colors.black,
+        fontSize: 10,
+        onSubmit: () {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Appointment(
+                  houseId: house.id,
+                  action: "UPDATE",
+                ),
+              ),
+            );
+          });
+        },
+      );
+    }
+
+    return CustomElevateButton(
+      name: house.activated ? "Edit" : "Activate",
+      color: Colors.black,
+      fontSize: 10,
+      onSubmit: () {
+        house.activated ? _navigateToEditProperty(context, house) : _navigateToPropertyDetails(context, house);
+      },
+    );
+  }
+
+  void _navigateToPropertyDetails(BuildContext context, HouseResponse house) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PropertyDetails(id: house.id, flag: "viewed"),
+        settings: const RouteSettings(name: 'SecondPage'),
+      ),
+    ).then((value) => BlocProvider.of<UploadBloc>(context).add(GetHouseByIdEvent(houseId: house.id)));
+  }
+
+  void _navigateToEditProperty(BuildContext context, HouseResponse house) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EditProperty(
+            houseId: house.id,
+            deposit: house.deposit,
+            occupationDate: house.occupationDate.toString(),
+            occupied: house.occupied,
+            rent: house.rent,
+          ),
+        ),
+      );
+    });
+  }
 }

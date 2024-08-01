@@ -51,6 +51,20 @@ class _HomeState extends State<Home> {
             const SizedBox(
               height: 50,
             ),
+            // const Logo(),
+            Container(
+              height: 200,
+              width: 200,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/home_icon.png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
             const Text(
               "NYUMBA",
               style: TextStyle(
@@ -72,7 +86,7 @@ class _HomeState extends State<Home> {
             //   ),
             // ),
             Padding(
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               child: Text(
                 "Welcome to Nyumba, your one-stop platform for uploading and searching for houses to rent. Get started by uploading your property or searching for your dream home.",
                 textAlign: TextAlign.center,
@@ -80,7 +94,7 @@ class _HomeState extends State<Home> {
                 style: GoogleFonts.montserrat(color: Colors.black, fontSize: 27, ),
               ),
             ),
-            Spacer(),
+            const Spacer(),
             Visibility(
               visible: true,
               child: BlocListener<UploadBloc, UploadState>(

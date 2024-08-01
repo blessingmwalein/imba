@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:imba/bloc/upload/upload_bloc.dart';
 import 'package:imba/bloc/upload/upload_event.dart';
+import 'package:imba/bloc/upload/upload_state.dart';
 import 'package:imba/data/models/house_response.dart';
-
-import '../../bloc/upload/upload_bloc.dart';
-import '../../bloc/upload/upload_state.dart';
-import '../../utilities/constants.dart';
-import '../widgets/custom_appbar.dart';
-import '../widgets/custom_elevated_button.dart';
-import '../widgets/custom_listview.dart';
-import '../widgets/loading_indicator.dart';
+import 'package:imba/ui/layouts/home_layout.dart';
+import 'package:imba/utilities/constants.dart';
+import 'package:imba/ui/widgets/custom_appbar.dart';
+import 'package:imba/ui/widgets/custom_elevated_button.dart';
+import 'package:imba/ui/widgets/custom_listview.dart';
+import 'package:imba/ui/widgets/loading_indicator.dart';
 
 class UploadsList extends StatefulWidget {
   const UploadsList({Key? key}) : super(key: key);
@@ -25,119 +25,151 @@ class _UploadsListState extends State<UploadsList> {
 
   @override
   void initState() {
-    BlocProvider.of<UploadBloc>(context).add(GetUploadsEvent());
-    BlocProvider.of<UploadBloc>(context).add(ResetUploadsEvent());
     super.initState();
+    _fetchUploads();
+  }
+
+  void _fetchUploads() {
+    final uploadBloc = BlocProvider.of<UploadBloc>(context);
+    uploadBloc.add(GetUploadsEvent());
+    uploadBloc.add(ResetUploadsEvent());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CustomAppBar(
-        elevation: 5,
-      ),
-      body: Padding(
+    return HomeLayout(
+      title: "Your Uploads",
+      hasBack: true,
+      child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: SingleChildScrollView(
-          child: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "UPLOADS",
-                  style: GoogleFonts.montserrat(
-                      fontSize: 20.sp,
-                      decoration: TextDecoration.none,
-                      color: ColorConstants.yellow,
-                      fontWeight: FontWeight.bold),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTitle(),
+              _buildDivider(),
+              BlocListener<UploadBloc, UploadState>(
+                listener: _blocListener,
+                child: BlocBuilder<UploadBloc, UploadState>(
+                  builder: (context, state) => _buildContent(state),
                 ),
-                Stack(children: const [
-                  Divider(),
-                  SizedBox(
-                      width: 50,
-                      child: Divider(thickness: 5, color: Colors.black))
-                ]),
-                BlocListener<UploadBloc, UploadState>(
-                  listener: (context, state) {
-                    if (state is GetUploadsSuccessState) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: const Text('loaded'),
-                        duration: const Duration(seconds: 1),
-                        action: SnackBarAction(
-                          label: '',
-                          onPressed: () {},
-                        ),
-                      ));
-                      // BlocProvider.of<UploadBloc>(context).add(ResetUploadsEvent());
-                    }
-                    if (state is UploadFailedState) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: const Text('failed to load'),
-                        duration: const Duration(seconds: 1),
-                        action: SnackBarAction(
-                          label: '',
-                          onPressed: () {},
-                        ),
-                      ));
-
-                      BlocProvider.of<UploadBloc>(context)
-                          .add(ResetUploadsEvent());
-                    }
-                  },
-                  child: BlocBuilder<UploadBloc, UploadState>(
-                      builder: (context, state) {
-                    if (state is UploadLoadingState) {
-                      return const LoadingIndicator();
-                    }
-                    if (state is GetUploadsSuccessState) {
-                      resp = state.uploadsResponse;
-
-                      return state.uploadsResponse.isEmpty
-                          ? Container(
-                              height: 500,
-                              width: 500,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Center(child: Text("Nothing here")),
-                                ],
-                              ),
-                            )
-                          : CustomListView(
-                              uploadsResponse: state.uploadsResponse,
-                              isPage: "uploads");
-                    }
-                    if (state is UploadFailedState) {
-                      return Container(
-                        height: 500,
-                        width: 500,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Center(child: Text(state.message)),
-                            CustomElevateButton(
-                                onSubmit: () {
-                                  BlocProvider.of<UploadBloc>(context)
-                                      .add(GetUploadsEvent());
-                                },
-                                color: ColorConstants.yellow,
-                                name: "Retry")
-                          ],
-                        ),
-                      );
-                    }
-
-                    return CustomListView(
-                        uploadsResponse: resp, isPage: "uploads");
-                  }),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildTitle() {
+    return Text(
+      "UPLOADS",
+      style: GoogleFonts.montserrat(
+        fontSize: 20.sp,
+        decoration: TextDecoration.none,
+        color: ColorConstants.yellow,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return const Stack(
+      children: [
+        Divider(),
+        SizedBox(
+          width: 50,
+          child: Divider(thickness: 5, color: Colors.black),
+        ),
+      ],
+    );
+  }
+
+  void _blocListener(BuildContext context, UploadState state) {
+    if (state is GetUploadsSuccessState) {
+      _showSnackBar(context, 'Loaded');
+    } else if (state is UploadFailedState) {
+      _showSnackBar(context, 'Failed to load');
+      _fetchUploads();
+    }
+  }
+
+  Widget _buildContent(UploadState state) {
+    if (state is UploadLoadingState) {
+      return const LoadingIndicator();
+    } else if (state is GetUploadsSuccessState) {
+      return _buildUploadsList(state.uploadsResponse);
+    } else if (state is UploadFailedState) {
+      return _buildErrorState(state.message);
+    } else {
+      return _buildEmptyState();
+    }
+  }
+
+  Widget _buildUploadsList(List<HouseResponse> uploads) {
+    if (uploads.isEmpty) {
+      return _buildEmptyState();
+    } else {
+      return CustomListView(
+        uploadsResponse: uploads,
+        isPage: "uploads",
+      );
+    }
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      height: 500,
+      width: 500,
+      alignment: Alignment.center,
+      child: const Center(
+        child: Text("Nothing here"),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Container(
+      height: 500,
+      width: 500,
+      alignment: Alignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Center(child: Text(message)),
+          CustomElevateButton(
+            onSubmit: _fetchUploads,
+            color: ColorConstants.yellow,
+            name: "Retry",
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      action: SnackBarAction(
+        label: 'Close',
+        
+        onPressed: () {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        },
+      ),
+      content: Container(
+        height: 30,
+        padding: const EdgeInsets.all(5),
+        alignment: Alignment.centerLeft,
+        child: Text(
+          message,
+          style: GoogleFonts.montserrat(
+            fontSize: 18.sp,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      duration: const Duration(seconds: 1),
+    ));
   }
 }

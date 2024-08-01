@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:imba/ui/layouts/home_layout.dart';
 import 'package:imba/ui/screens/search_results.dart';
 import 'package:intl/intl.dart';
 
@@ -88,55 +89,43 @@ class _SearchState extends State<Search> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios_new,
-              color: Colors.black,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          elevation: 0,
-          backgroundColor: Colors.white,
-          title: Container(
-              color: ColorConstants.grey,
-              child: Text("SEARCH",
-                  style: GoogleFonts.montserrat(
-                      fontSize: 20,
-                      decoration: TextDecoration.none,
-                      color: ColorConstants.yellow))),
-          actions: [
-            IconButton(
-              icon: const Logo(
-                imageUrl: 'assets/images/houseicon.png',
-              ),
-              iconSize: 100,
-              onPressed: () {},
-            )
-          ],
-        ),
-        body: SingleChildScrollView(
+    return HomeLayout(
+        hasBack: true,
+        title: 'Search',
+        isSuccess: false,
+        child: SingleChildScrollView(
           child: Form(
             key: formKey,
             child: Column(children: [
               Padding(
                 padding: const EdgeInsets.all(15.0),
-                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.6,
-                    child: TextField(
-                      controller: _SearchFieldController,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(),
-                        hintText: 'Enter search value',
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: TextField(
+                    controller: _SearchFieldController,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.search),
+                      hintText: 'Enter search value',
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 20, horizontal: 10.0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: BorderSide(color: ColorConstants.yellow),
                       ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: BorderSide(color: ColorConstants.yellow),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                          borderSide: BorderSide(color: ColorConstants.yellow)),
                     ),
-                  )
-                ]),
+                  ),
+                ),
               ),
 
               CustomTextField(
@@ -164,38 +153,12 @@ class _SearchState extends State<Search> {
                 // },
               ),
               //  const   CustomTextField(hintText: '', labelText: 'Type',),
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                        flex: 1,
-                        child: Text("Type", style: GoogleFonts.montserrat())),
-                    Expanded(
-                      flex: 2,
-                      child: SizedBox(
-                        height: 30,
-                        child: Container(
-                          color: ColorConstants.grey,
-                          child: DropdownButton(
-                            isDense: true,
-                            value: typeValue,
-                            icon: const Icon(Icons.keyboard_arrow_down),
-                            items: widget.types.map((String items) {
-                              return DropdownMenuItem(
-                                  value: items, child: Text(items));
-                            }).toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                typeValue = newValue.toString();
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              _buildDropdownField(
+                label: 'Type',
+                value: typeValue,
+                items: widget.types,
+                onChanged: (newValue) =>
+                    setState(() => typeValue = newValue.toString()),
               ),
               CustomTextField(
                 readOnly: false,
@@ -215,38 +178,12 @@ class _SearchState extends State<Search> {
                   return null;
                 },
               ),
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                        flex: 1,
-                        child: Text("Classification",
-                            style: GoogleFonts.montserrat())),
-                    Expanded(
-                        flex: 2,
-                        child: SizedBox(
-                          height: 30,
-                          child: Container(
-                            color: ColorConstants.grey,
-                            child: DropdownButton(
-                              isDense: true,
-                              value: classificationsValue,
-                              icon: const Icon(Icons.keyboard_arrow_down),
-                              items: widget.classifications.map((String items) {
-                                return DropdownMenuItem(
-                                    value: items, child: Text(items));
-                              }).toList(),
-                              onChanged: (newValue) {
-                                setState(() {
-                                  classificationsValue = newValue.toString();
-                                });
-                              },
-                            ),
-                          ),
-                        )),
-                  ],
-                ),
+              _buildDropdownField(
+                label: 'Classification',
+                value: classificationsValue,
+                items: widget.classifications,
+                onChanged: (newValue) =>
+                    setState(() => classificationsValue = newValue.toString()),
               ),
               SearchRangeTextfield(
                 name: 'Rentals',
@@ -269,87 +206,66 @@ class _SearchState extends State<Search> {
                   if (formKey.currentState!.validate()) {}
                 },
               ),
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Occupation Date"),
-                    const SizedBox(height: 10),
-                    Row(children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   Padding(
+                     padding: const EdgeInsets.only(left:16.0, top: 10),
+                     child: Text("Occupation Date", style: GoogleFonts.montserrat(
+                        fontSize: 16, color: Colors.black87
+                                       )),
+                   ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
                       Expanded(
                         flex: 1,
-                        child: TextFormField(
-                          focusNode: AlwaysDisabledFocusNode(),
+                        child: buildDateTextField(
                           controller: _startDateController,
-                          decoration: InputDecoration(
-                              isDense: true,
-                              border: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                              hintText:
-                                  DateFormat.yMMMMd('en_US').format(startDate),
-                              filled: true,
-                              fillColor: ColorConstants.grey),
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(10),
-                            DateFormatter(),
-                          ],
-                          validator: (value) {
-                            if (isStartSelected == false) {
-                              return 'Please select start date';
-                            }
-                            return null;
-                          },
+                          hintText:
+                              DateFormat.yMMMMd('en_US').format(startDate),
+                          fieldType: 'start',
                           onTap: () {
                             setState(() {
                               isStartSelected = true;
                             });
                             _selectDate(context, 'start');
                           },
+                          isSelected: isStartSelected,
+                          validator: (value) {
+                            if (!isStartSelected) {
+                              return 'Please select start date';
+                            }
+                            return "";
+                          },
                         ),
                       ),
                       const SizedBox(width: 20),
                       Expanded(
                         flex: 1,
-                        child: TextFormField(
-                          focusNode: AlwaysDisabledFocusNode(),
+                        child: buildDateTextField(
                           controller: _endDateController,
-                          decoration: InputDecoration(
-                              isDense: true,
-                              border: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                              hintText:
-                                  DateFormat.yMMMMd('en_US').format(endDate),
-                              filled: true,
-                              fillColor: ColorConstants.grey),
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(10),
-                            DateFormatter(),
-                          ],
-                          validator: (value) {
-                            if (isStartSelected == false) {
-                              return 'Please select end date';
-                            }
-                            return null;
-                          },
+                          hintText:
+                              DateFormat.yMMMMd('en_US').format(endDate),
+                          fieldType: 'end',
                           onTap: () {
                             setState(() {
                               isStartSelected = true;
                             });
                             _selectDate(context, 'end');
                           },
+                          isSelected: isStartSelected,
+                          validator: (value) {
+                            if (!isStartSelected) {
+                              return 'Please select end date';
+                            }
+                            return "";
+                          },
                         ),
                       ),
-                    ])
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
 
               Padding(
@@ -432,63 +348,62 @@ class _SearchState extends State<Search> {
 
               Padding(
                 padding: const EdgeInsets.all(15.0),
-                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  SizedBox(
-                    width: 150,
-                    child: CustomElevateButton(
-                      name: 'FIND',
-                      color: ColorConstants.yellow,
-                      onSubmit: () {
-                        setState(() {
-                          contactText.text.isEmpty
-                              ? validate = true
-                              : validate = false;
-                        });
-                        if (formKey.currentState!.validate()) {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => SearchResults(
-                                      minNumberRooms:
-                                          _minRoomsController.text.trim(),
-                                      maxNumberRooms:
-                                          _maxRoomsController.text.trim(),
-                                      area: _areaController.text.trim(),
-                                      city: _cityController.text.trim(),
-                                      type: typeValue,
-                                      classification: classificationsValue,
-                                      contact: _contactController.text.trim(),
-                                      electricityInclusive: isElectricity,
-                                      isBorehole: isBorehole,
-                                      isDeposit: isDeposit,
-                                      isGated: isGated,
-                                      isSolar: isSolar,
-                                      isTiled: isTiled,
-                                      isWalled: isWalled,
-                                      searchValue:
-                                          _SearchFieldController.text.trim(),
-                                      maxRent: _maxRentController.text.trim(),
-                                      minRent: _minRentController.text.trim(),
-                                      page: 0,
-                                      size: 0,
-                                      token: '',
-                                      waterInclusive: isWater,
-                                      startDate: startDate.toString(),
-                                      endDate: endDate.toString())));
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: const Text('Fill out missing fields'),
-                            duration: const Duration(seconds: 2),
-                            action: SnackBarAction(
-                              label: '',
-                              onPressed: () {},
-                            ),
-                          ));
-                        }
-                      },
-                    ),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: 60,
+                  child: CustomElevateButton(
+                    name: 'FIND',
+                    color: ColorConstants.yellow,
+                    onSubmit: () {
+                      setState(() {
+                        contactText.text.isEmpty
+                            ? validate = true
+                            : validate = false;
+                      });
+                      if (formKey.currentState!.validate()) {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SearchResults(
+                                    minNumberRooms:
+                                        _minRoomsController.text.trim(),
+                                    maxNumberRooms:
+                                        _maxRoomsController.text.trim(),
+                                    area: _areaController.text.trim(),
+                                    city: _cityController.text.trim(),
+                                    type: typeValue,
+                                    classification: classificationsValue,
+                                    contact: _contactController.text.trim(),
+                                    electricityInclusive: isElectricity,
+                                    isBorehole: isBorehole,
+                                    isDeposit: isDeposit,
+                                    isGated: isGated,
+                                    isSolar: isSolar,
+                                    isTiled: isTiled,
+                                    isWalled: isWalled,
+                                    searchValue:
+                                        _SearchFieldController.text.trim(),
+                                    maxRent: _maxRentController.text.trim(),
+                                    minRent: _minRentController.text.trim(),
+                                    page: 0,
+                                    size: 0,
+                                    token: '',
+                                    waterInclusive: isWater,
+                                    startDate: startDate.toString(),
+                                    endDate: endDate.toString())));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: const Text('Fill out missing fields'),
+                          duration: const Duration(seconds: 2),
+                          action: SnackBarAction(
+                            label: '',
+                            onPressed: () {},
+                          ),
+                        ));
+                      }
+                    },
                   ),
-                ]),
+                ),
               ),
             ]),
           ),
@@ -526,6 +441,90 @@ class _SearchState extends State<Search> {
         pos == 'start' ? startDate = pickedDate : endDate = pickedDate;
       });
     }
+  }
+
+  Widget _buildDropdownField({
+    required String label,
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: ColorConstants.yellow),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: ColorConstants.yellow),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: Colors.red),
+          ),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: BorderSide(color: ColorConstants.yellow)),
+        ),
+        onChanged: onChanged,
+        items: items.map((String item) {
+          return DropdownMenuItem<String>(
+            value: item,
+            child: Text(item,
+                style: GoogleFonts.montserrat(
+                    fontSize: 16, color: Colors.black87)),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  //build date
+
+  Widget _buildCheckboxRow({
+    required String label,
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+  }) {
+    return Row(
+      children: [
+        Checkbox(
+          value: value,
+          onChanged: onChanged,
+        ),
+        Text(label,
+            style: GoogleFonts.montserrat(fontSize: 16, color: Colors.black87)),
+      ],
+    );
+  }
+
+  Widget buildDateTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required String fieldType,
+    required void Function() onTap,
+    required bool isSelected,
+    required String Function(String?) validator,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AbsorbPointer(
+        child:CustomTextField(
+            controller: controller
+              ..text = DateFormat('dd/MM/yyyy').format(DateTime.now()),
+            labelText: fieldType == 'start' ? 'Start Date' : 'End Date',
+            validator: (value) => value == null || value.isEmpty
+                ? 'Please enter occupation date'
+                : null,
+            // inputFormatters: [DateFormatter()],
+          ),
+      ),
+    );
   }
 
   TimeOfDay _time = TimeOfDay(

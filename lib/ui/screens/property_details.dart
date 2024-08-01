@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +8,7 @@ import 'package:imba/bloc/activate/activate_state.dart';
 import 'package:imba/bloc/upload/upload_bloc.dart';
 import 'package:imba/bloc/upload/upload_state.dart';
 import 'package:imba/data/models/payment_response.dart';
+import 'package:imba/ui/layouts/home_layout.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -19,7 +19,6 @@ import '../../utilities/constants.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/loading_indicator.dart';
 import '../widgets/logo.dart';
-import '../widgets/maps_widget.dart';
 import '../widgets/property_error_widget.dart';
 import 'actions_options.dart';
 import 'edit_property.dart';
@@ -37,421 +36,252 @@ class PropertyDetails extends StatefulWidget {
 
 class _PropertyDetailsState extends State<PropertyDetails> {
   late PageController _pageController;
-
-  @override
-  void initState() {
-    BlocProvider.of<ActivateBloc>(context)
-        .add(ActivationResetEvent());
-    BlocProvider.of<UploadBloc>(context)
-        .add(GetHouseByIdEvent(houseId: widget.id));
-
-    super.initState();
-    _pageController = PageController(viewportFraction: 0.8);
-  }
-  List<String> images=[];
-  void _processImageUrls(List<Pics> pics){
-    if(pics.isNotEmpty){
-      for (var element in pics) {
-        images.add("http://api.codiebutterfly.com/house/${element.id}/image/download");
-      }}
-  }
-
-
-  List<String> placeholders=['assets/images/placeholder1.jpg',
+  late PaymentResponse houseDetails;
+  bool isActivated = false;
+  List<String> images = [];
+  final List<String> placeholders = [
+    'assets/images/placeholder1.jpg',
     'assets/images/placeholder2.jpg',
     'assets/images/placeholder3.jpg',
     'assets/images/placeholder4.jpg',
-    'assets/images/placeholder5.jpg'];
+    'assets/images/placeholder5.jpg'
+  ];
 
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.8);
+    BlocProvider.of<ActivateBloc>(context).add(ActivationResetEvent());
+    BlocProvider.of<UploadBloc>(context)
+        .add(GetHouseByIdEvent(houseId: widget.id));
+  }
 
-  var isActivated = false;
-  late PaymentResponse houseDetails;
+  void _processImageUrls(List<Pics> pics) {
+    if (pics.isNotEmpty) {
+      images = pics
+          .map((pic) =>
+              "http://api.codiebutterfly.com/house/${pic.id}/image/download")
+          .toList();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<UploadBloc, UploadState>(builder: (context, state) {
       if (state is GetHouseByIdSuccess) {
-        isActivated = state.houseResponse.house!.activated!;
         houseDetails = state.houseResponse;
-        List<Pics>  pics=state.houseResponse.pics!;
-        _processImageUrls(pics);
+        isActivated = state.houseResponse.house!.activated!;
+        _processImageUrls(state.houseResponse.pics!);
 
-        return Scaffold(
-            body: SafeArea(
-          child: SingleChildScrollView(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height*1.5,
-              child: Column(
-                children: [
-                  // SizedBox(
-                  //   width: MediaQuery.of(context).size.width,
-                  //   height: MediaQuery.of(context).size.height * 0.4,
-                  //   child: CarouselSlider(
-                  //     carouselController: _pageController,
-                  //     options: CarouselOptions(
-                  //       viewportFraction: 1,
-                  //       height: MediaQuery.of(context).size.height * 0.4,
-                  //       enlargeCenterPage: true,
-                  //       onPageChanged: (position, reason) {
-                  //         print(reason);
-                  //         print(CarouselPageChangedReason.controller);
-                  //       },
-                  //       enableInfiniteScroll: false,
-                  //     ),
-                  //     items:images.isNotEmpty? images.map<Widget>((i) {
-                  //       return Builder(
-                  //         builder: (BuildContext context) {
-                  //           return SizedBox(
-                  //               width: MediaQuery.of(context).size.width,
-                  //               height: MediaQuery.of(context).size.height * 0.5,
-                  //               // margin: EdgeInsets.all(10),
-                  //               child: Image.network(
-                  //                 i,
-                  //                 fit: BoxFit.cover,
-                  //                 width: MediaQuery.of(context).size.width,
-                  //                 height: MediaQuery.of(context).size.height * 0.4,
-                  //               )
-                  //           );
-                  //         },
-                  //       );
-                  //     }).toList():
-                  //     placeholders.map<Widget>((i) {
-                  //       return Builder(
-                  //         builder: (BuildContext context) {
-                  //           return SizedBox(
-                  //               width: MediaQuery.of(context).size.width,
-                  //               height: MediaQuery.of(context).size.height * 0.5,
-                  //               // margin: EdgeInsets.all(10),
-                  //               child: Image.asset(
-                  //                 i,
-                  //                 fit: BoxFit.cover,
-                  //                 width: MediaQuery.of(context).size.width,
-                  //                 height: MediaQuery.of(context).size.height * 0.4,
-                  //               )
-                  //           );
-                  //         },
-                  //       );
-                  //     }).toList()
-                  //     ,
-                  //   ),
-                  // ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.8,
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Column(children: [
-                                  Text(state.houseResponse.house!.type!,
-                                      style: GoogleFonts.montserrat()),
-                                  GestureDetector(
-                                      onTap: () {
-                                        print(state.houseResponse.house!.gpsLocation);
-                                        List<String> result = state
-                                            .houseResponse.house!.gpsLocation!
-                                            .split(',');
-                                        // MapUtils.openMap(double.parse(result[0]),double.parse(result[1]));
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) => MapScreen(
-                                                    latitude:
-                                                        double.parse(result[0]),
-                                                    longitude: double.parse(
-                                                        result[1]))));
-                                      },
-                                      child: const Logo(
-                                          imageUrl:
-                                              'assets/images/address-location.png',
-                                          height: 50,
-                                          width: 50)),
-                                ]),
-                                Column(children: [
-                                  Text(
-                                      "${state.houseResponse.house!.houseAddress}\n${state.houseResponse.house!.area}\n${state.houseResponse.house!.city}",
-                                      style: GoogleFonts.montserrat()),
-                                ])
-                              ],
-                            ),
-                            Column(children: [
-                              Text("${state.houseResponse.house!.numberRooms} Rooms",
-                                  style: GoogleFonts.montserrat(
-                                      color: ColorConstants.yellow,
-                                      fontSize: 35)),
-                              Text(state.houseResponse.house!.extraDetails!,
-                                  style: GoogleFonts.montserrat())
-                            ]),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                RatingBar.builder(
-                                  ignoreGestures: true,
-                                  unratedColor: ColorConstants.grey,
-                                  initialRating:
-                                      state.houseResponse.house!.rate!.toDouble(),
-                                  minRating: 0,
-                                  direction: Axis.horizontal,
-                                  //  allowHalfRating: true,
-                                  itemCount: 5,
-                                  itemBuilder: (context, _) => Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                    size: 10.sp,
-                                  ),
-                                  onRatingUpdate: (initialRating) {
-                                    print(initialRating);
-                                  },
-                                )
-                              ],
-                            ),
-                            const SizedBox(height: 15),
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Column(children: [
-                                    Text(
-                                      "OCCUPATION DATE",
-                                      style: GoogleFonts.montserrat(
-                                          color: ColorConstants.yellow,
-                                          fontSize: 10),
-                                      textAlign: TextAlign.right,
-                                    ),
-                                    Text(
-                                        DateFormat.yMMMMd('en_US').format(
-                                            DateTime.parse(state
-                                                .houseResponse.house!.occupationDate
-                                                .toString())),
-                                        textAlign: TextAlign.right,
-                                        style: GoogleFonts.montserrat(
-                                            fontWeight: FontWeight.bold))
-                                  ]),
-                                ]),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(state.houseResponse.house!.solar!
-                                          ? "Solar"
-                                          : ""),
-                                      SizedBox(
-                                          height:
-                                              state.houseResponse.house!.solar! ? 10 : 0),
-                                      Text(state.houseResponse.house!.boreHole!
-                                          ? "Borehole"
-                                          : ""),
-                                      SizedBox(
-                                          height: state.houseResponse.house!.boreHole!
-                                              ? 10
-                                              : 0),
-                                      Text(state.houseResponse.house!.rentWaterInclusive!
-                                          ? "Rent Includes water"
-                                          : ""),
-                                      SizedBox(
-                                          height: state.houseResponse.house!
-                                                  .rentWaterInclusive!
-                                              ? 10
-                                              : 0),
-                                      Text(state.houseResponse.house!
-                                              .rentElectricityInclusive!
-                                          ? "Rent Includes electricity"
-                                          : ""),
-                                      SizedBox(
-                                          height: state.houseResponse.house!
-                                                  .rentElectricityInclusive!
-                                              ? 10
-                                              : 0),
-                                      Text(state.houseResponse.house!.gated!
-                                          ? "Gated"
-                                          : ""),
-                                      SizedBox(
-                                          height:
-                                              state.houseResponse.house!.gated! ? 10 : 0),
-                                      Text(state.houseResponse.house!.tiled!
-                                          ? "Tiled"
-                                          : ""),
-                                      SizedBox(
-                                          height:
-                                              state.houseResponse.house!.tiled! ? 10 : 0),
-                                      Text(state.houseResponse.house!.walled!
-                                          ? "Walled"
-                                          : ""),
-                                      SizedBox(
-                                          height: state.houseResponse.house!.walled!
-                                              ? 20
-                                              : 0),
-                                    ]),
-                              ],
-                            ),
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  GestureDetector(
-                                    onTap: ()=> launch(state.houseResponse.house!.contact!),
-                                    child: const Logo(
-                                        imageUrl: 'assets/images/phone.png',
-                                        color: Colors.blue,
-                                        height: 20,
-                                        width: 20),
-                                  ),
-                                  Text(state.houseResponse.house!.contact!)
-                                ]),
-                            const SizedBox(height: 15),
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "RENT",
-                                        style: GoogleFonts.montserrat(
-                                            color: ColorConstants.yellow,
-                                            fontSize: 10),
-                                      ),
-                                      Text(
-                                        "${state.houseResponse.house!.currency}${state.houseResponse.house!.rent!}",
-                                        style: GoogleFonts.montserrat(
-                                            color: Colors.black,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold),
-                                      )
-                                    ],
-                                  ),
-                                  Column(
-                                    children: [
-                                      BlocBuilder<ActivateBloc, ActivateState>(
-                                          builder: (context, state) {
-                                        if (state is ActivateLoadingState) {
-                                          return const LoadingIndicator();
-                                        }
-                                        if (state is ActivateHouseSuccess) {
-                                          if (state.isActivated == true) {
-                                            isActivated = true;
-                                            BlocProvider.of<ActivateBloc>(context)
-                                                .add(ActivationResetEvent());
+        return HomeLayout(
+          hasBack: true,
+          title: "Property Details ${houseDetails.house?.type}",
+          actions: [
+            //edit icon button
+            IconButton(onPressed: (){}, icon: const Icon(Icons.edit_outlined)),
 
-                                          }
-                                          if (state.isActivated == false) {
-                                            SchedulerBinding.instance!
-                                                .addPostFrameCallback((_) {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          const PropertyError(
-                                                              errorMessage:
-                                                                  'Failed to activate contact admin')));
-                                            });
-
-                                            BlocProvider.of<ActivateBloc>(context)
-                                                .add(ActivationResetEvent());
-                                          }
-                                        }
-                                        print("++++++" + isActivated.toString());
-                                        if (state is ActivateFailedState) {
-                                          if (state.message
-                                              .contains("not registered")) {
-                                            SchedulerBinding.instance!
-                                                .addPostFrameCallback((_) {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          const PropertyError(
-                                                              errorMessage:
-                                                                  'Set up profile first')));
-                                            });
-                                            BlocProvider.of<ActivateBloc>(context)
-                                                .add(ActivationResetEvent());
-                                          } else {
-                                            SchedulerBinding.instance!
-                                                .addPostFrameCallback((_) {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                           PropertyError(
-                                                              errorMessage:
-                                                                  state.message)));
-                                            });
-                                          }
-                                        }
-
-                                        return widget.flag == "actions"
-                                            ? CustomElevateButton(
-                                                onSubmit: () {
-                                                  Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              ActionsOptions(
-                                                                houseId:
-                                                                    widget.id,
-                                                              )));
-                                                },
-                                                name: "Actions",
-                                                color: ColorConstants.yellow,
-                                              )
-                                            : CustomElevateButton(
-                                                name: isActivated
-                                                    ? 'EDIT'
-                                                    : 'ACTIVATE',
-                                                color: ColorConstants.yellow,
-                                                onSubmit: () {
-                                                  isActivated
-                                                      ? Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  EditProperty(
-                                                                    houseId:
-                                                                        widget.id,
-                                                                    deposit:
-                                                                        houseDetails.house!
-                                                                            .deposit!,
-                                                                    occupationDate:
-                                                                        houseDetails.house!.
-                                                                            occupationDate
-                                                                            .toString(),
-                                                                    occupied:
-                                                                        houseDetails.house!
-                                                                            .occupied!,
-                                                                    rent:
-                                                                        houseDetails.house!
-                                                                            .rent!,
-                                                                  )))
-
-                                                      : BlocProvider.of<
-                                                                  ActivateBloc>(
-                                                              context)
-                                                          .add(ActivateHouseEvent(
-                                                              houseId:
-                                                                  widget.id));
-                                                  // BlocProvider.of<UploadBloc>(context).add(GetUploadsEvent());
-                                                  // widget.flag=="viewed"?"":Navigator.pop(context);
-                                                },
-                                              );
-                                      })
-                                    ],
-                                  )
-                                ])
-                          ],
-                        )),
-                  )
-                ],
+          ],
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCarousel(),
+                    const SizedBox(height: 15),
+                    _buildPropertyInfo(state.houseResponse),
+                    const Divider(),
+                    _buildContactInfo(state.houseResponse),
+                    const SizedBox(height: 15),
+                    _buildActivateButton(),
+                  ],
+                ),
               ),
             ),
           ),
-        ));
+        );
       }
       return const LoadingIndicator();
+    });
+  }
+
+  Widget _buildCarousel() {
+    return SizedBox(
+      height: 200,
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: images.isNotEmpty ? images.length : placeholders.length,
+        itemBuilder: (context, index) {
+          final imageUrl =
+              images.isNotEmpty ? images[index] : placeholders[index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                imageUrl,
+                fit: BoxFit.cover,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPropertyInfo(PaymentResponse houseResponse) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildIconLabeledInfo(
+                  Icons.king_bed, '${houseResponse.house!.numberRooms} Rooms'),
+              _buildIconLabeledInfo(Icons.home, houseResponse.house!.type!),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildIconLabeledInfo(Icons.location_on,
+                  '${houseResponse.house!.houseAddress}, ${houseResponse.house!.city}'),
+              Row(
+                children: [
+                  const Icon(Icons.attach_money, color: Colors.orange),
+                  const SizedBox(width: 5),
+                  Text(
+                     '${houseResponse.house!.currency}${houseResponse.house!.rent!}',
+                    style: GoogleFonts.montserrat(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                    ),
+                  ),
+                ],
+              ),
+      
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIconLabeledInfo(IconData icon, String text) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Icon(icon, color: ColorConstants.yellow),
+        const SizedBox(width: 5),
+        Text(
+          text,
+          style: GoogleFonts.montserrat(
+            color: Colors.black,
+            fontSize: 16,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContactInfo(PaymentResponse houseResponse) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Contact Details",
+            style: GoogleFonts.montserrat(
+              color: ColorConstants.yellow,
+              fontSize: 15,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(Icons.email, color: Colors.orange),
+              const SizedBox(width: 5),
+              Text(
+                houseResponse.house!.email!,
+                style: GoogleFonts.montserrat(
+                  color: Colors.black,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(Icons.phone, color: Colors.orange),
+              const SizedBox(width: 5),
+              Text(
+                houseResponse.house!.contact!,
+                style: GoogleFonts.montserrat(
+                  color: Colors.black,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivateButton() {
+    return BlocBuilder<ActivateBloc, ActivateState>(builder: (context, state) {
+      if (state is ActivateLoadingState) {
+        return const LoadingIndicator();
+      }
+
+      if (state is ActivateHouseSuccess) {
+        isActivated = state.isActivated!;
+        if (isActivated) {
+          BlocProvider.of<ActivateBloc>(context).add(ActivationResetEvent());
+        }
+      }
+
+      if (state is ActivateFailedState) {
+        SchedulerBinding.instance!.addPostFrameCallback((_) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PropertyError(errorMessage: state.message),
+            ),
+          );
+        });
+      }
+
+      return CustomElevateButton(
+        name: isActivated ? 'EDIT' : 'ACTIVATE',
+        color: ColorConstants.yellow,
+        onSubmit: () {
+          if (isActivated) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EditProperty(
+                  houseId: widget.id,
+                  deposit: houseDetails.house!.deposit!,
+                  occupationDate: houseDetails.house!.occupationDate.toString(),
+                  occupied: houseDetails.house!.occupied!,
+                  rent: houseDetails.house!.rent!,
+                ),
+              ),
+            );
+          } else {
+            BlocProvider.of<ActivateBloc>(context)
+                .add(ActivateHouseEvent(houseId: widget.id));
+          }
+        },
+      );
     });
   }
 }

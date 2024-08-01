@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../utilities/constants.dart';
 
@@ -26,53 +27,76 @@ class SearchRangeTextfield extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(15.0),
+         padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(name),
+        Text(name, style: GoogleFonts.montserrat(fontSize: 16, color: Colors.black)),
         const SizedBox(height: 10),
-        SizedBox(
-          height: 30,
-          child: Row(children: [
-            Expanded(
-              flex: 1,
-              child: TextFormField(
-                controller: minController,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-
-                  // labelText: labelText,
-                  hintText: minHint,
-                  filled: true,
-                  fillColor: ColorConstants.grey,
+        Row(children: [
+          Expanded(
+            flex: 1,
+            child: TextFormField(
+              controller: minController,
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(
+                    vertical: 20, horizontal: 10.0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: ColorConstants.yellow),
                 ),
-                onChanged: onChanged,
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: ColorConstants.yellow),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: Colors.red),
+                ),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(color: ColorConstants.yellow)),
+        
+                // labelText: labelText,
+                hintText: minHint,
+                filled: true,
+                fillColor: ColorConstants.grey.withOpacity(0.1),
               ),
+              onChanged: onChanged,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              flex: 1,
-              child: TextFormField(
-                controller: maxController,
-                decoration: InputDecoration(
-                    border: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    errorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-
-                    // labelText: labelText,
-                    hintText: maxHint,
-                    filled: true,
-                    fillColor: ColorConstants.grey),
-                onChanged: onChanged,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            flex: 1,
+            child: TextFormField(
+              controller: maxController,
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(
+                    vertical: 20, horizontal: 10.0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: ColorConstants.yellow),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: ColorConstants.yellow),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: Colors.red),
+                ),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(color: ColorConstants.yellow)),
+        
+                // labelText: labelText,
+                hintText: maxHint,
+                filled: true,
+                fillColor: ColorConstants.grey.withOpacity(0.1),
               ),
+              onChanged: onChanged,
             ),
-          ]),
-        )
+          ),
+        ])
       ]),
     );
   }

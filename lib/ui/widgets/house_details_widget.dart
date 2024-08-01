@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../utilities/constants.dart';
 
@@ -37,7 +38,7 @@ class _HouseDetailsState extends State<HouseDetails> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(widget.text1),
+              Text(widget.text1, style: GoogleFonts.montserrat(fontSize: 16, color: Colors.black)),
               Checkbox(
                 activeColor: ColorConstants.yellow,
                 checkColor: ColorConstants.yellow,
@@ -52,7 +53,7 @@ class _HouseDetailsState extends State<HouseDetails> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(widget.text2),
+              Text(widget.text2, style: GoogleFonts.montserrat(fontSize: 16, color: Colors.black)),
               Checkbox(
                 activeColor: ColorConstants.yellow,
                 checkColor: ColorConstants.yellow,
@@ -70,4 +71,6 @@ class _HouseDetailsState extends State<HouseDetails> {
       ],
     );
   }
+
+
 }

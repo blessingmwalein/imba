@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:imba/bloc/views/views_state.dart';
+import 'package:imba/ui/layouts/home_layout.dart';
 
 import '../../bloc/views/views_bloc.dart';
 import '../../bloc/views/views_event.dart';
+import '../../bloc/views/views_state.dart';
 import '../../data/models/house_response.dart';
 import '../../utilities/constants.dart';
 import '../widgets/custom_appbar.dart';
@@ -21,120 +22,141 @@ class Viewed extends StatefulWidget {
 }
 
 class _ViewedState extends State<Viewed> {
+  List<HouseResponse> viewedHouses = [];
+
   @override
   void initState() {
-    BlocProvider.of<ViewedBloc>(context).add(GetViewedEvent());
     super.initState();
+    BlocProvider.of<ViewedBloc>(context).add(GetViewedEvent());
   }
 
-  List<HouseResponse> resp = [];
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CustomAppBar(
-        elevation: 5,
-      ),
-      body: Padding(
+    return HomeLayout(
+      title: 'Viewed',
+      hasBack: true,
+      child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: SingleChildScrollView(
           child: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Viewed",
-                  style: GoogleFonts.montserrat(
-                      fontSize: 20.sp,
-                      decoration: TextDecoration.none,
-                      color: ColorConstants.yellow,
-                      fontWeight: FontWeight.bold),
-                ),
-                Stack(children: const [
-                  Divider(),
-                  SizedBox(
-                      width: 50,
-                      child: Divider(thickness: 5, color: Colors.black))
-                ]),
-                BlocListener<ViewedBloc, ViewedState>(
-                  listener: (context, state) {
-                    if (state is ViewedSuccessState) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: const Text('loaded'),
-                        duration: const Duration(seconds: 1),
-                        action: SnackBarAction(
-                          label: '',
-                          onPressed: () {},
-                        ),
-                      ));
-                      // BlocProvider.of<UploadBloc>(context).add(ResetUploadsEvent());
-                    }
-                    if (state is ViewedFailedState) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: const Text('failed to load'),
-                        duration: const Duration(seconds: 1),
-                        action: SnackBarAction(
-                          label: '',
-                          onPressed: () {},
-                        ),
-                      ));
-
-                      BlocProvider.of<ViewedBloc>(context)
-                          .add(ViewedResetEvent());
-                    }
-                  },
-                  child: BlocBuilder<ViewedBloc, ViewedState>(
-                      builder: (context, state) {
-                    if (state is ViewedLoadingState) {
-                      return const LoadingIndicator();
-                    }
-                    if (state is ViewedSuccessState) {
-                      resp = state.viewedResponse;
-
-                      return state.viewedResponse.isEmpty
-                          ? Container(
-                              height: 500,
-                              width: 500,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Center(child: Text("Nothing here")),
-                                ],
-                              ),
-                            )
-                          : CustomListView(
-                              uploadsResponse: state.viewedResponse,
-                              isPage: "viewed");
-                    }
-                    if (state is ViewedFailedState) {
-                      return Container(
-                        height: 500,
-                        width: 500,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Center(child: Text(state.message)),
-                            CustomElevateButton(
-                                onSubmit: () {
-                                  BlocProvider.of<ViewedBloc>(context)
-                                      .add(GetViewedEvent());
-                                },
-                                color: ColorConstants.yellow,
-                                name: "Retry")
-                          ],
-                        ),
-                      );
-                    }
-
-                    return CustomListView(
-                        uploadsResponse: resp, isPage: "viewed");
-                  }),
-                ),
-              ],
-            ),
+            child: _buildContent(),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTitle() {
+    return Text(
+      "Viewed",
+      style: GoogleFonts.montserrat(
+        fontSize: 20.sp,
+        fontWeight: FontWeight.bold,
+        color: ColorConstants.yellow,
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return const Stack(
+      children: [
+        Divider(),
+        SizedBox(
+          width: 50,
+          child: Divider(thickness: 5, color: Colors.black),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContent() {
+    return BlocListener<ViewedBloc, ViewedState>(
+      listener: (context, state) {
+        if (state is ViewedSuccessState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Loaded successfully'),
+              duration: Duration(seconds: 1),
+            ),
+          );
+        } else if (state is ViewedFailedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to load'),
+              duration: Duration(seconds: 1),
+            ),
+          );
+          BlocProvider.of<ViewedBloc>(context).add(ViewedResetEvent());
+        }
+      },
+      child: BlocBuilder<ViewedBloc, ViewedState>(
+        builder: (context, state) {
+          if (state is ViewedLoadingState) {
+            return const LoadingIndicator();
+          } else if (state is ViewedSuccessState) {
+            viewedHouses = state.viewedResponse;
+            return viewedHouses.isEmpty
+                ? _buildEmptyState()
+                : CustomListView(
+                    uploadsResponse: viewedHouses,
+                    isPage: "viewed",
+                  );
+          } else if (state is ViewedFailedState) {
+            return _buildErrorState(state.message);
+          }
+
+          return CustomListView(
+            uploadsResponse: viewedHouses,
+            isPage: "viewed",
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return  SizedBox(
+      height: 500,
+      width: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.hourglass_empty_rounded, size: 100, color: Colors.grey),
+          SizedBox(height: 16),
+          Text(
+            "Nothing here",
+            style: GoogleFonts.montserrat(
+              color: Colors.grey,
+              fontSize: 20.sp,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return SizedBox(
+      height: 500,
+      width: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 100, color: Colors.red),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          CustomElevateButton(
+            onSubmit: () {
+              BlocProvider.of<ViewedBloc>(context).add(GetViewedEvent());
+            },
+            color: ColorConstants.yellow,
+            name: "Retry",
+          ),
+        ],
       ),
     );
   }
