@@ -36,8 +36,8 @@ class InfiniteSearchResult extends StatefulWidget {
   final String searchValue;
   final String startDate;
   final String endDate;
-final String minRooms;
-final String maxRooms;
+  final String minRooms;
+  final String maxRooms;
   final bool isSearch;
 
   const InfiniteSearchResult(
@@ -73,8 +73,6 @@ final String maxRooms;
 }
 
 class _InfiniteSearchResultState extends State<InfiniteSearchResult> {
-
-
   int _page = 0;
 
   // you can change this value to fetch more or less posts per page (10, 15, 5, etc)
@@ -100,7 +98,6 @@ class _InfiniteSearchResultState extends State<InfiniteSearchResult> {
 
   // This function will be called when the app launches (see the initState function)
   void _firstLoad() async {
-
     setState(() {
       _isFirstLoadRunning = true;
     });
@@ -112,7 +109,7 @@ class _InfiniteSearchResultState extends State<InfiniteSearchResult> {
       final json = jsonDecode(res.body);
       setState(() {
         widget.isSearch
-            ?( searchList=SearchResponse.fromJson(json).searchedList)
+            ? (searchList = SearchResponse.fromJson(json).searchedList)
             : viewedList = SearchResponse.fromJson(json).viewedList;
       });
     } catch (err) {
@@ -130,7 +127,6 @@ class _InfiniteSearchResultState extends State<InfiniteSearchResult> {
   // This function will be triggered whenver the user scroll
   // to near the bottom of the list view
   void _loadMore() async {
-
     if (_hasNextPage == true &&
         _isFirstLoadRunning == false &&
         _isLoadMoreRunning == false &&
@@ -144,7 +140,8 @@ class _InfiniteSearchResultState extends State<InfiniteSearchResult> {
         final res = await http.get(Uri.parse(
             "$BASE_URL/house/list?page=$_page&size=$_limit&area=${widget.area}&searchValue=${widget.searchValue}&startDate=${widget.startDate}&city=${widget.city}&type=${widget.type}&classification=${widget.classification}&endDate=${widget.endDate}&borehole=${widget.isBorehole}&solar=${widget.isSolar}&minRent=${widget.minRent}&maxRent=${widget.maxRent}&rentWaterInclusive=${widget.waterInclusive}&rentElectricityInclusive=${widget.electricityInclusive}&needsDeposit=${widget.isDeposit}&token=$token&contact=${widget.contact}&gated=${widget.isGated}&tiled=${widget.isTiled}&walled=${widget.isWalled}&minNumberRooms=${widget.minRooms}&maxNumberRooms=${widget.maxRooms}"));
         final SearchResponse fetchedPosts = json.decode(res.body);
-        if (fetchedPosts.searchedList.isNotEmpty || fetchedPosts.viewedList.isNotEmpty) {
+        if (fetchedPosts.searchedList.isNotEmpty ||
+            fetchedPosts.viewedList.isNotEmpty) {
           setState(() {
             widget.isSearch
                 ? searchList.addAll(fetchedPosts.searchedList)
@@ -199,12 +196,14 @@ class _InfiniteSearchResultState extends State<InfiniteSearchResult> {
           )
         : listLength < 1
             ? Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    SizedBox(height: 400, child: Text("No properties found")),
-                  ],
+                child: Container(
+                  height: 500,
+                  width: 500,
+                  alignment: Alignment.center,
+                  child: const Center(
+                    child: Text("No properties found",
+                        style: TextStyle(fontSize: 30, color: Colors.black)),
+                  ),
                 ),
               )
             : Expanded(
@@ -219,27 +218,27 @@ class _InfiniteSearchResultState extends State<InfiniteSearchResult> {
                         itemBuilder: (_, index) => Card(
                           child: Row(children: [
                             Expanded(
-                              flex:2,
+                                flex: 2,
                                 child: Column(children: [
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => ViewHouse(
-                                              id: widget.isSearch
-                                                  ? searchList[index].id
-                                                  : viewedList[index].id,
-                                              flag: "actions")));
-                                },
-                                child: const Logo(
-                                    imageUrl: 'assets/images/houseicon.png',
-                                    height: 100,
-                                    width: 100),
-                              )
-                            ])),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => ViewHouse(
+                                                  id: widget.isSearch
+                                                      ? searchList[index].id
+                                                      : viewedList[index].id,
+                                                  flag: "actions")));
+                                    },
+                                    child: const Logo(
+                                        imageUrl: 'assets/images/houseicon.png',
+                                        height: 100,
+                                        width: 100),
+                                  )
+                                ])),
                             Expanded(
-                              flex:3,
+                              flex: 3,
                               child: Column(children: [
                                 Text(
                                     widget.isSearch
@@ -247,77 +246,85 @@ class _InfiniteSearchResultState extends State<InfiniteSearchResult> {
                                         : viewedList[index].houseAddress,
                                     textAlign: TextAlign.left,
                                     style: const TextStyle(
-
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold)),
-                                Text(widget.isSearch
-                                    ? searchList[index].area
-                                    : viewedList[index].area,
-                                  textAlign: TextAlign.left,style: const TextStyle(
-
+                                Text(
+                                    widget.isSearch
+                                        ? searchList[index].area
+                                        : viewedList[index].area,
+                                    textAlign: TextAlign.left,
+                                    style: const TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold)),
-                                Text(widget.isSearch
-                                    ? searchList[index].city
-                                    : viewedList[index].city,
-                                  textAlign: TextAlign.left,style: const TextStyle(
-
+                                Text(
+                                    widget.isSearch
+                                        ? searchList[index].city
+                                        : viewedList[index].city,
+                                    textAlign: TextAlign.left,
+                                    style: const TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold))
                               ]),
                             ),
                             Expanded(
-                              flex:1,
+                                flex: 1,
                                 child: Column(children: [
-                              Text(
-                                  widget.isSearch
-                                      ? searchList[index].numberRooms.toString()
-                                      : viewedList[index]
-                                          .numberRooms
-                                          .toString(),
-                                  style: const TextStyle(
-                                      color: ColorConstants.yellow,
-                                    fontSize: 17,))
-                            ])),
+                                  Text(
+                                      widget.isSearch
+                                          ? searchList[index]
+                                              .numberRooms
+                                              .toString()
+                                          : viewedList[index]
+                                              .numberRooms
+                                              .toString(),
+                                      style: const TextStyle(
+                                        color: ColorConstants.yellow,
+                                        fontSize: 17,
+                                      ))
+                                ])),
                             Expanded(
-                              flex:2,
+                                flex: 2,
                                 child: Column(children: [
-                              Text(
-                                  widget.isSearch
-                                      ? searchList[index].currency + searchList[index].rent.toString()
-                                      : viewedList[index].currency +
-                                          viewedList[index].rent.toString(),
-                                  style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold)),
-                              CustomElevateButton(
-                                name: widget.isSearch ? "VIEW" : "RESERVE",
-                                color: Colors.black,
-                                fontSize: 10,
-                                onSubmit: () {
-                                  widget.isSearch
-                                      ? Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => ViewHouse(
-                                                    id: searchList[index].id,
-                                                    flag: 'actions',
-                                                  )))
-                                      : WidgetsBinding.instance!
-                                          .addPostFrameCallback((_) {
-                                          Navigator.push(
+                                  Text(
+                                      widget.isSearch
+                                          ? searchList[index].currency +
+                                              searchList[index].rent.toString()
+                                          : viewedList[index].currency +
+                                              viewedList[index].rent.toString(),
+                                      style: const TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold)),
+                                  CustomElevateButton(
+                                    name: widget.isSearch ? "VIEW" : "RESERVE",
+                                    color: Colors.black,
+                                    fontSize: 10,
+                                    onSubmit: () {
+                                      widget.isSearch
+                                          ? Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                   builder: (context) =>
-                                                      Appointment(
-                                                          action: 'UPDATE',
-                                                          houseId:
-                                                              viewedList[index]
-                                                                  .id)));
-                                        });
-                                },
-                              )
-                            ]))
+                                                      ViewHouse(
+                                                        id: searchList[index]
+                                                            .id,
+                                                        flag: 'actions',
+                                                      )))
+                                          : WidgetsBinding.instance!
+                                              .addPostFrameCallback((_) {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          Appointment(
+                                                              action: 'UPDATE',
+                                                              houseId:
+                                                                  viewedList[
+                                                                          index]
+                                                                      .id)));
+                                            });
+                                    },
+                                  )
+                                ]))
                           ]),
                         ),
                       ),

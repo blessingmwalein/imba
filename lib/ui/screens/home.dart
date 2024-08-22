@@ -66,7 +66,7 @@ class _HomeState extends State<Home> {
               height: 20,
             ),
             const Text(
-              "NYUMBA",
+              "IMBA",
               style: TextStyle(
                 backgroundColor: Colors.transparent,
                 fontFamily: 'Antreas',

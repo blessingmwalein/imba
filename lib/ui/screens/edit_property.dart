@@ -3,6 +3,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:imba/ui/layouts/home_layout.dart';
 import 'package:imba/ui/screens/register.dart';
 import 'package:imba/ui/screens/uploads.dart';
 import 'package:imba/utilities/constants.dart';
@@ -40,6 +41,7 @@ class EditProperty extends StatefulWidget {
 
 class _EditPropertyState extends State<EditProperty> {
   bool isChecked = false;
+  bool isStartSelected = false;
 
   DateTime currentDate = DateTime.now();
 
@@ -69,92 +71,45 @@ class _EditPropertyState extends State<EditProperty> {
   @override
   Widget build(BuildContext context) {
     print(widget.deposit);
-    return Scaffold(
-        appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back_ios_new,
-                color: Colors.black,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            title: Container(
-                width: 100,
-                color: ColorConstants.grey,
-                child: Text("EDIT",
-                    style: GoogleFonts.montserrat(
-                        fontSize: 20,
-                        decoration: TextDecoration.none,
-                        color: ColorConstants.yellow))),
-            actions: [
-              IconButton(
-                icon: const Logo(
-                  imageUrl: 'assets/images/houseicon.png',
-                ),
-                iconSize: 100,
-                onPressed: () {},
-              )
-            ]),
-        body: SingleChildScrollView(
+    return HomeLayout(
+        hasBack: true,
+        title: 'Edit Property',
+        child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Form(
               key: formKey,
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text("${widget.houseId}",
-                          style: GoogleFonts.montserrat(
-                              fontSize: 30,
-                              decoration: TextDecoration.none,
-                              color: ColorConstants.yellow)),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: SizedBox(
-                      // height:30,
-                      child: Row(
-                        children: [
-                          Expanded(
-                              flex: 1,
-                              child: Text("Occupation Date",
-                                  style: GoogleFonts.montserrat())),
-                          Expanded(
-                            flex: 2,
-                            child: TextFormField(
-                              focusNode: AlwaysDisabledFocusNode(),
-                              controller: _occupatiionDateController,
-                              decoration: InputDecoration(
-                                  isDense: true,
-                                  border: InputBorder.none,
-                                  focusedBorder: InputBorder.none,
-                                  enabledBorder: InputBorder.none,
-                                  errorBorder: InputBorder.none,
-                                  disabledBorder: InputBorder.none,
-                                  hintText: DateFormat.yMMMMd('en_US')
-                                      .format(currentDate),
-                                  filled: true,
-                                  fillColor: ColorConstants.grey),
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(10),
-                                DateFormatter(),
-                              ],
-                              onChanged: null,
-                              onTap: () {
-                                _selectDate(context);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.end,
+                  //   children: [
+
+                  //     Text("${widget.houseId}",
+                  //         style: GoogleFonts.montserrat(
+                  //             fontSize: 30,
+                  //             decoration: TextDecoration.none,
+                  //             color: ColorConstants.yellow)),
+                  //   ],
+                  // ),
+                  buildDateTextField(
+                    controller: _occupatiionDateController,
+                    hintText: DateFormat.yMMMMd('en_US').format(currentDate),
+                    fieldType: 'start',
+                    labelText: 'Occupation Date',
+                    onTap: () {
+                      setState(() {
+                        isStartSelected = true;
+                      });
+                      _selectDate(context);
+                    },
+                    isSelected: isStartSelected,
+                    validator: (value) {
+                      if (!isStartSelected) {
+                        return 'Please select occupation date';
+                      }
+                      return "";
+                    },
                   ),
                   CustomTextField(
                     readOnly: false,
@@ -187,7 +142,10 @@ class _EditPropertyState extends State<EditProperty> {
                         const Expanded(
                             flex: 1,
                             child: Text('Occupied',
-                                style: TextStyle(fontSize: 14))),
+                                style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 20,
+                            fontFamily: 'Montserrat'))),
                         Expanded(
                           flex: 2,
                           child: Column(
@@ -307,6 +265,31 @@ class _EditPropertyState extends State<EditProperty> {
             ),
           ),
         ));
+  }
+
+  Widget buildDateTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required String fieldType,
+    required void Function() onTap,
+    required bool isSelected,
+    required String labelText,
+    required String Function(String?) validator,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AbsorbPointer(
+        child: CustomTextField(
+          controller: controller
+            ..text = DateFormat('dd/MM/yyyy').format(DateTime.now()),
+          labelText: labelText,
+          validator: (value) => value == null || value.isEmpty
+              ? 'Please enter occupation date'
+              : null,
+          // inputFormatters: [DateFormatter()],
+        ),
+      ),
+    );
   }
 
   Future<void> _selectDate(BuildContext context) async {

@@ -78,8 +78,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
           title: "Property Details ${houseDetails.house?.type}",
           actions: [
             //edit icon button
-            IconButton(onPressed: (){}, icon: const Icon(Icons.edit_outlined)),
-
+            IconButton(onPressed: () {}, icon: const Icon(Icons.edit_outlined)),
           ],
           child: SafeArea(
             child: SingleChildScrollView(
@@ -155,7 +154,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                   const Icon(Icons.attach_money, color: Colors.orange),
                   const SizedBox(width: 5),
                   Text(
-                     '${houseResponse.house!.currency}${houseResponse.house!.rent!}',
+                    '${houseResponse.house!.currency}${houseResponse.house!.rent!}',
                     style: GoogleFonts.montserrat(
                       color: Colors.black,
                       fontWeight: FontWeight.w700,
@@ -164,7 +163,6 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                   ),
                 ],
               ),
-      
             ],
           ),
         ],
@@ -279,9 +277,42 @@ class _PropertyDetailsState extends State<PropertyDetails> {
           } else {
             BlocProvider.of<ActivateBloc>(context)
                 .add(ActivateHouseEvent(houseId: widget.id));
+
+            context.read<ActivateBloc>().stream.listen((activateState) {
+              if (activateState is ActivateHouseSuccess) {
+                _showSnackBar(context, 'Property activated successfully');
+              }else if(activateState is ActivateFailedState){
+                _showSnackBar(context, activateState.message);
+              }
+            });
           }
         },
       );
     });
+  }
+
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      action: SnackBarAction(
+        label: 'Close',
+        
+        onPressed: () {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        },
+      ),
+      content: Container(
+        height: 30,
+        padding: const EdgeInsets.all(5),
+        alignment: Alignment.centerLeft,
+        child: Text(
+          message,
+          style: GoogleFonts.montserrat(
+            fontSize: 18.sp,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      duration: const Duration(seconds: 1),
+    ));
   }
 }

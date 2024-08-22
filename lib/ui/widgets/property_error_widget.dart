@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:imba/ui/widgets/custom_elevated_button.dart';
 
 import '../../utilities/constants.dart';
 import 'logo.dart';
@@ -25,7 +26,16 @@ class PropertyError extends StatelessWidget {
                   fontSize: 25.sp)),
           const SizedBox(height: 10),
           Text(errorMessage,
-              style: TextStyle(fontFamily: "Montserrat", fontSize: 10.sp))
+              style: TextStyle(fontFamily: "Montserrat", fontSize: 10.sp)),
+          const SizedBox(height: 10),
+          CustomElevateButton(
+            name: 'Try Again',
+            color: Colors.orange,
+            onSubmit: () {
+              //navigate back to search page
+              Navigator.pop(context);
+            },
+          )
         ]),
       ),
     );

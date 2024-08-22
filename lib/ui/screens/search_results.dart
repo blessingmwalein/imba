@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:imba/ui/layouts/home_layout.dart';
 
 import '../../utilities/constants.dart';
 import '../widgets/custom_textbutton.dart';
@@ -66,10 +67,10 @@ class _SearchResultsState extends State<SearchResults> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: Container(
-      padding: const EdgeInsets.all(8.0),
-      child: SafeArea(
+    return HomeLayout(
+      hasBack: true,
+      title: 'Search Results',
+      child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -158,8 +159,8 @@ class _SearchResultsState extends State<SearchResults> {
                     searchValue: widget.searchValue,
                     startDate: widget.startDate,
                     type: widget.type,
-                minRooms:widget.minNumberRooms,
-                maxRooms:widget.maxNumberRooms)),
+                    minRooms: widget.minNumberRooms,
+                    maxRooms: widget.maxNumberRooms)),
             // child: const InfiniteSearchResult(isSearch: true,)),
             // child: const Infinite()),
 
@@ -188,13 +189,13 @@ class _SearchResultsState extends State<SearchResults> {
                     searchValue: widget.searchValue,
                     startDate: widget.startDate,
                     type: widget.type,
-                    minRooms:widget.minNumberRooms,
-                    maxRooms:widget.maxNumberRooms)),
+                    minRooms: widget.minNumberRooms,
+                    maxRooms: widget.maxNumberRooms)),
             // child: const CustomSearchListView(isSearch: false,))
           ],
         ),
       ),
-    ));
+    );
     // ),
     // );
   }
